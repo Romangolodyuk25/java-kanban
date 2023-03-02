@@ -5,14 +5,19 @@ import java.util.Objects;
 public class SubTask extends Task {
 
     public Epic epic;
+    private int idEpic;
 
-    public SubTask(String nameTask, String description, String status) {
+    public SubTask(String nameTask, String description, String status, int idEpic) {
         super(nameTask, description, status);
+        this.idEpic = idEpic;
     }
 
-    public SubTask(String nameTask, String description, String status, int id){
-        super(nameTask, description,status);
-        this.setId(id);
+    public int getIdEpic() {
+        return idEpic;
+    }
+
+    public void setEpic(Epic epic) {
+        this.epic = epic;
     }
 
     @Override
@@ -32,7 +37,7 @@ public class SubTask extends Task {
     @Override
     public String toString() {
         return "SubTask{" +
-                "EpicId=" + epic.getId() +
+                "EpicId=" + getIdEpic() +
                 ", Name=" + getName() +
                 ", Descriptor=" + getDescription() +
                 ", id=" + getId() +

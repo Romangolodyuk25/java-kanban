@@ -13,15 +13,15 @@ public class Main {
 
         task = new Task("Переезд", "Я буду переезжать", Task.STATUS_NEW);
         epic = new Epic("Мы переезжаем", "Много задач по переезду", Task.STATUS_NEW);
-        subTask = new SubTask("Собрать вещи", "Разложить вещи в чемодан", Task.STATUS_IN_PROGRESS);
+        subTask = new SubTask("Собрать вещи", "Разложить вещи в чемодан", Task.STATUS_IN_PROGRESS,1);
         SubTask subTask1 = new SubTask("Съездить на вокзала за билетами",
-                "Купить билеты на 15 число", Task.STATUS_IN_PROGRESS);
+                "Купить билеты на 15 число", Task.STATUS_IN_PROGRESS,1);
 
 
         managerTask.createTask(task);
         managerTask.createEpic(epic);
-        managerTask.createSubTask(subTask, 1);
-        managerTask.createSubTask(subTask1, 1);
+        managerTask.createSubTask(subTask);
+        managerTask.createSubTask(subTask1);
 
         System.out.println(managerTask.getAllTasks());
         System.out.println(managerTask.getAllSubTask());
@@ -41,7 +41,6 @@ public class Main {
         System.out.println(managerTask.getAllSubTask());
         System.out.println(managerTask.getAllEpic());
 
-        System.out.println(managerTask.deleteAllTasks());
         System.out.println(managerTask.getSubTaskInSpecificEpic(1));
 
 

@@ -7,10 +7,10 @@ public class Task {
     public static final String STATUS_NEW = "NEW";
     public static final String STATUS_IN_PROGRESS = "IN_PROGRESS";
     public static final String STATUS_DONE = "DONE";
-    private String name;
-    private String description;//(описание)
-    private int id;
-    private String status;
+    protected String name;
+    protected String description;//(описание)
+    protected int id;
+    protected String status;
 
     public Task(String name, String description, String status) {
         this.name = name;

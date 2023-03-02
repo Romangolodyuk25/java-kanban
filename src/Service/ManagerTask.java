@@ -18,32 +18,34 @@ public class ManagerTask {
 
 
     // ПОЛУЧЕНИЕ ВСЕХ ОБЪЕКТОВ
-    public HashMap<Integer, Task> getAllTasks() {
-        return taskStorage;
+    public ArrayList<Task> getAllTasks() {
+        return new ArrayList<Task>(taskStorage.values());
     }
 
-    public HashMap<Integer, SubTask> getAllSubTask() {
-        return subTaskStorage;
+    public ArrayList<SubTask> getAllSubTask() {
+        return new ArrayList<SubTask>(subTaskStorage.values());
     }
 
-    public HashMap<Integer, Epic> getAllEpic() {
-        return epicStorage;
+    public ArrayList<Epic> getAllEpic() {
+        return new ArrayList<Epic>(epicStorage.values());
     }
 
     // УДАЛЕНИЕ ВСЕХ ОБЪЕКТОВ
-    public HashMap<Integer, Task> deleteAllTasks() {
+    public void deleteAllTasks() {
         taskStorage.clear();
-        return taskStorage;
     }
 
-    public HashMap<Integer, SubTask> deleteAllSubTasks() {
+    public void deleteAllSubTasks() {
+        for (Epic epic : epicStorage.values()){
+            epic.clearListSubTaskId();
+        }
         subTaskStorage.clear();
-        return subTaskStorage;
+        // при удалении саб тасков нужно отчистить у эпиков сабтаски(так как я буду хранить теперь там айди то айдишники стереть)
     }
 
-    public HashMap<Integer, Epic> deleteAllEpic() {
+    public void deleteAllEpic() {
         epicStorage.clear();
-        return epicStorage;
+        subTaskStorage.clear();// при удалении эпика будут стираться все SubTask без эпика нет SubTask
     }
 
     // ПОЛУЧЕНИЕ ОБЪЕКТОВ ПО ID
@@ -60,17 +62,22 @@ public class ManagerTask {
     }
 
     //СОЗДАНИЕ ОБЪЕКТОВ.
-    public void createTask(Task newTask) {// приве
+    public void createTask(Task newTask) {
         newTask.setId(taskId);
         taskStorage.put(taskId, newTask);
         taskId++;
     }
 
-    public void createSubTask(SubTask newSubTask, int epicId) {
+    public void createSubTask(SubTask newSubTask) {//int epicId хранится в самой подзадаче
         newSubTask.setId(subTaskId);
-        Epic epicName = epicStorage.get(epicId);
-        epicName.subTaskList.add(newSubTask);
-        newSubTask.epic = epicName;
+        Epic epicName;
+        if(epicStorage.containsKey(newSubTask.getIdEpic())) {
+            epicName = epicStorage.get(newSubTask.getIdEpic());
+            epicName.addListSubTaskId(newSubTask.getId());
+            newSubTask.epic = epicName;
+        } else {
+            System.out.println("Подзадача не может существовать без эпика");
+        }
         subTaskStorage.put(subTaskId, newSubTask);
         subTaskId++;
     }
@@ -83,50 +90,23 @@ public class ManagerTask {
 
     //ОБНОВЛЕНИЕ
     public void updateTask(Task task) {
-        taskStorage.put(task.getId(), task);//передал новый объеект со статусом внутри
+        taskStorage.put(task.getId(), task);
     }
 
     public void updateSubTask(SubTask subTask) {
-        Epic newEpic = subTaskStorage.get(subTask.getId()).epic;//зайти в епик найти по айди старый сабтаск удалить его и добавить новый
-        subTask.epic = newEpic;
-        subTaskStorage.put(subTask.getId(), subTask);
-        int subTasksNewOrInProgress = 0;
-        for (SubTask i : subTask.epic.subTaskList) {
-            if (i.getStatus().equals(Task.STATUS_NEW) || i.getStatus().equals(Task.STATUS_IN_PROGRESS)) {
-                subTasksNewOrInProgress++;
-            }
-        }
-        if (subTasksNewOrInProgress == 0) {
-            subTask.epic.setStatus(Task.STATUS_DONE);
+        if (subTaskStorage.containsKey(subTask.getId())) {
+            Epic newEpic = subTaskStorage.get(subTask.getId()).epic;//зайти в епик найти по айди старый сабтаск удалить его и добавить новый
+            updateStatusInEpic(newEpic);
+            subTask.epic = newEpic;
+            subTaskStorage.put(subTask.getId(), subTask);
         } else {
-            subTask.epic.setStatus(Task.STATUS_IN_PROGRESS);
+            System.out.println("Данного id для subTask не существует");
         }
     }
 
     public void updateEpic(Epic epic) {
-        epicStorage.put(epic.getId(), epic);
-        boolean statusIsNew = true;
-        boolean statusIsDone = false;
-        for (SubTask i : epic.subTaskList) {
-            if (i.getStatus().equals(Task.STATUS_NEW)) {
-                continue;
-            }
-            statusIsNew = false;
-        }
-        for (SubTask j : epic.subTaskList) {
-            if (j.getStatus().equals(Task.STATUS_DONE)) {
-                statusIsDone = true;
-            } else {
-                statusIsDone = false;
-            }
-        }
-        if (epic.subTaskList.isEmpty() && statusIsNew) {
-            epic.setStatus(Task.STATUS_NEW);
-        } else if (statusIsDone) {
-            epic.setStatus(Task.STATUS_DONE);
-        } else {
-            epic.setStatus(Task.STATUS_IN_PROGRESS);
-        }
+       Epic updateEpic = updateStatusInEpic(epic);
+        epicStorage.put(epic.getId(), updateEpic);//обновил epic и положил updateEpic
     }
 
     //УДАЛЕНИЕ ПО ID
@@ -135,17 +115,50 @@ public class ManagerTask {
     }
 
     public void deleteFromIdSubTask(int id) {
+        int idCountEpic = subTaskStorage.get(id).getIdEpic();
+        epicStorage.get(idCountEpic).removeSubTuskId(id);
         subTaskStorage.remove(id);
+        // после удаления саб таски, ее нужно удалить из определенного эпика
     }
 
     public void deleteFromIdEpic(int id) {
+        ArrayList<Integer> listSubTaskId = epicStorage.get(id).getAllListSubTaskId();
         epicStorage.remove(id);
+        for (Integer i : listSubTaskId) {
+            subTaskStorage.remove(i);
+        }
+        // если удаляется эпик, то удаляются все саб таски
     }
 
-    public ArrayList<SubTask> getSubTaskInSpecificEpic(int idEpic) {
+    public ArrayList<Integer> getSubTaskInSpecificEpic(int idEpic) {
         Epic countEpic = epicStorage.get(idEpic);
-        return countEpic.subTaskList;
+        return countEpic.getAllListSubTaskId();
     }
 
+    public Epic updateStatusInEpic(Epic epic){
+        int subTasksStatusInProgressOrDone = 0;
+        int subTasksStatusIsNewOrProgress = 0;
+
+        for (Integer i : epic.getAllListSubTaskId()){
+            if(subTaskStorage.get(i).getStatus().equals(Task.STATUS_DONE) ||
+                    subTaskStorage.get(i).getStatus().equals(Task.STATUS_IN_PROGRESS)) {
+                subTasksStatusInProgressOrDone++;
+            }
+        }
+        for (Integer j : epic.getAllListSubTaskId()){
+            if(subTaskStorage.get(j).getStatus().equals(Task.STATUS_NEW) ||
+                    subTaskStorage.get(j).getStatus().equals(Task.STATUS_IN_PROGRESS)){
+                subTasksStatusIsNewOrProgress++;
+            }
+        }
+        if (epic.getAllListSubTaskId().isEmpty() && subTasksStatusInProgressOrDone==0) {
+            epic.setStatus(Task.STATUS_NEW);
+        } else if (subTasksStatusIsNewOrProgress==0) {
+            epic.setStatus(Task.STATUS_DONE);
+        } else {
+            epic.setStatus(Task.STATUS_IN_PROGRESS);
+        }
+        return epic;
+    }
 
 }
