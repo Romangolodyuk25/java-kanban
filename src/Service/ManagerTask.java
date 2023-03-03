@@ -49,15 +49,15 @@ public class ManagerTask {
     }
 
     // ПОЛУЧЕНИЕ ОБЪЕКТОВ ПО ID
-    public Task getTaskForId(int id) {
+    public Task getTaskById(int id) {
         return taskStorage.get(id);
     }
 
-    public SubTask getSubTaskForId(int id) {
+    public SubTask getSubTaskById(int id) {
         return subTaskStorage.get(id);
     }
 
-    public Epic getEpicForId(int id) {
+    public Epic getEpicById(int id) {
         return epicStorage.get(id);
     }
 
@@ -74,12 +74,11 @@ public class ManagerTask {
         if(epicStorage.containsKey(newSubTask.getIdEpic())) {
             epicName = epicStorage.get(newSubTask.getIdEpic());
             epicName.addListSubTaskId(newSubTask.getId());
-            newSubTask.epic = epicName;
+            subTaskStorage.put(subTaskId, newSubTask);
+            subTaskId++;
         } else {
             System.out.println("Подзадача не может существовать без эпика");
         }
-        subTaskStorage.put(subTaskId, newSubTask);
-        subTaskId++;
     }
 
     public void createEpic(Epic newEpic) {
@@ -94,34 +93,37 @@ public class ManagerTask {
     }
 
     public void updateSubTask(SubTask subTask) {
-        if (subTaskStorage.containsKey(subTask.getId())) {
-            Epic newEpic = subTaskStorage.get(subTask.getId()).epic;//зайти в епик найти по айди старый сабтаск удалить его и добавить новый
-            updateStatusInEpic(newEpic);
-            subTask.epic = newEpic;
+        if (subTaskStorage.containsKey(subTask.getId()) && epicStorage.containsKey(subTask.getIdEpic())) {//проверил айди в SubTask и айди Epic
             subTaskStorage.put(subTask.getId(), subTask);
+            Epic newEpic = epicStorage.get(subTask.getIdEpic()); //достал епик указанный в SubTask
+            updateStatusInEpic(newEpic); //сделал расчет статуса
         } else {
             System.out.println("Данного id для subTask не существует");
         }
     }
 
     public void updateEpic(Epic epic) {
-       Epic updateEpic = updateStatusInEpic(epic);
-        epicStorage.put(epic.getId(), updateEpic);//обновил epic и положил updateEpic
+        Epic savedEpic = epicStorage.get(epic.getId());
+        savedEpic.setName(epic.getName());
+        savedEpic.setDescription(epic.getDescription());
+        epicStorage.put(epic.getId(), savedEpic);//обновил epic и положил updateEpic
     }
 
     //УДАЛЕНИЕ ПО ID
-    public void deleteForIdTask(int id) {
+    public void deleteTaskById(int id) {
         taskStorage.remove(id);
     }
 
-    public void deleteFromIdSubTask(int id) {
+    public void deleteSubTaskById(int id) {
         int idCountEpic = subTaskStorage.get(id).getIdEpic();
         epicStorage.get(idCountEpic).removeSubTuskId(id);
+        updateStatusInEpic(epicStorage.get(idCountEpic));
         subTaskStorage.remove(id);
+
         // после удаления саб таски, ее нужно удалить из определенного эпика
     }
 
-    public void deleteFromIdEpic(int id) {
+    public void deleteEpicById(int id) {
         ArrayList<Integer> listSubTaskId = epicStorage.get(id).getAllListSubTaskId();
         epicStorage.remove(id);
         for (Integer i : listSubTaskId) {
@@ -130,9 +132,16 @@ public class ManagerTask {
         // если удаляется эпик, то удаляются все саб таски
     }
 
-    public ArrayList<Integer> getSubTaskInSpecificEpic(int idEpic) {
-        Epic countEpic = epicStorage.get(idEpic);
-        return countEpic.getAllListSubTaskId();
+    public ArrayList<SubTask> getSubTaskInSpecificEpic(int idEpic) {
+        ArrayList<SubTask> subTasks = new ArrayList<>();
+        Epic epic = epicStorage.get(idEpic);
+        if (epic == null) {
+            return null;
+        }
+        for (Integer id : epic.getAllListSubTaskId()){
+            subTasks.add(subTaskStorage.get(id));
+        }
+        return subTasks;
     }
 
     public Epic updateStatusInEpic(Epic epic){

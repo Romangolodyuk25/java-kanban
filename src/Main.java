@@ -17,7 +17,6 @@ public class Main {
         SubTask subTask1 = new SubTask("Съездить на вокзала за билетами",
                 "Купить билеты на 15 число", Task.STATUS_IN_PROGRESS,1);
 
-
         managerTask.createTask(task);
         managerTask.createEpic(epic);
         managerTask.createSubTask(subTask);

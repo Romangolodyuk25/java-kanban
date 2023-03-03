@@ -4,7 +4,6 @@ import java.util.Objects;
 
 public class SubTask extends Task {
 
-    public Epic epic;
     private int idEpic;
 
     public SubTask(String nameTask, String description, String status, int idEpic) {
@@ -16,22 +15,18 @@ public class SubTask extends Task {
         return idEpic;
     }
 
-    public void setEpic(Epic epic) {
-        this.epic = epic;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         SubTask subTask = (SubTask) o;
-        return Objects.equals(epic, subTask.epic);
+        return idEpic == subTask.idEpic;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), epic);
+        return Objects.hash(super.hashCode(), idEpic);
     }
 
     @Override
