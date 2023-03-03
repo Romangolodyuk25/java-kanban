@@ -68,7 +68,7 @@ public class ManagerTask {
         taskId++;
     }
 
-    public void createSubTask(SubTask newSubTask) {//int epicId хранится в самой подзадаче
+        public void createSubTask(SubTask newSubTask) {//int epicId хранится в самой подзадаче
         newSubTask.setId(subTaskId);
         Epic epicName;
         if(epicStorage.containsKey(newSubTask.getIdEpic())) {
@@ -103,10 +103,10 @@ public class ManagerTask {
     }
 
     public void updateEpic(Epic epic) {
+        //не использую epicStorage.put(pic.getId(), epic) потому что могу затереть поля (например SubTaskListId)
         Epic savedEpic = epicStorage.get(epic.getId());
         savedEpic.setName(epic.getName());
         savedEpic.setDescription(epic.getDescription());
-        epicStorage.put(epic.getId(), savedEpic);//обновил epic и положил updateEpic
     }
 
     //УДАЛЕНИЕ ПО ID
