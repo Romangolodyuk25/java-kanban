@@ -1,48 +1,54 @@
 import Model.Epic;
+import Model.Status;
 import Model.SubTask;
 import Model.Task;
-import Service.ManagerTask;
+import Service.Managers;
 
 
 public class Main {
     public static void main(String[] args) {
-        ManagerTask managerTask = new ManagerTask();
+        Managers managers = new Managers();
         Task task;
         SubTask subTask;
         Epic epic;
 
-        task = new Task("Переезд", "Я буду переезжать", Task.STATUS_NEW);
-        epic = new Epic("Мы переезжаем", "Много задач по переезду", Task.STATUS_NEW);
-        subTask = new SubTask("Собрать вещи", "Разложить вещи в чемодан", Task.STATUS_IN_PROGRESS,1);
+        task = new Task("Переезд", "Я буду переезжать", Status.NEW);
+        epic = new Epic("Мы переезжаем", "Много задач по переезду", Status.NEW);
+        subTask = new SubTask("Собрать вещи", "Разложить вещи в чемодан", Status.IN_PROGRESS,1);
         SubTask subTask1 = new SubTask("Съездить на вокзала за билетами",
-                "Купить билеты на 15 число", Task.STATUS_IN_PROGRESS,1);
+                "Купить билеты на 15 число", Status.IN_PROGRESS,1);
 
-        managerTask.createTask(task);
-        managerTask.createEpic(epic);
-        managerTask.createSubTask(subTask);
-        managerTask.createSubTask(subTask1);
+        managers.getDefault().createTask(task);
+        managers.getDefault().createEpic(epic);
+        managers.getDefault().createSubTask(subTask);
+        managers.getDefault().createSubTask(subTask1);
 
-        System.out.println(managerTask.getAllTasks());
-        System.out.println(managerTask.getAllSubTask());
-        System.out.println(managerTask.getAllEpic());
+        System.out.println(managers.getDefault().getAllTasks());
+        System.out.println(managers.getDefault().getAllSubTask());
+        System.out.println(managers.getDefault().getAllEpic());
 
-        Task newUpdateTask = new Task("Переезд", "Я буду переезжать", Task.STATUS_IN_PROGRESS);
-        managerTask.updateTask(newUpdateTask);
+        Task newUpdateTask = new Task("Переезд", "Я буду переезжать", Status.IN_PROGRESS);
+        managers.getDefault().updateTask(newUpdateTask);
 
-        SubTask newUpdateSubTask = new SubTask("Собрать вещи", "Разложить вещи в чемодан", Task.STATUS_DONE, 1);
-        managerTask.updateSubTask(newUpdateSubTask);
+        SubTask newUpdateSubTask = new SubTask("Собрать вещи", "Разложить вещи в чемодан", Status.NEW, 1);
+        managers.getDefault().updateSubTask(newUpdateSubTask);
 
         SubTask newUpdateSubTask1 = new SubTask("Съездить на вокзала за билетами","Купить билеты на 15 число",
-                Task.STATUS_DONE,2);
-        managerTask.updateSubTask(newUpdateSubTask1);
+                Status.NEW,2);
+        managers.getDefault().updateSubTask(newUpdateSubTask1);
 
-        System.out.println(managerTask.getAllTasks());
-        System.out.println(managerTask.getAllSubTask());
-        System.out.println(managerTask.getAllEpic());
+        System.out.println(managers.getDefault().getAllTasks());
+        System.out.println(managers.getDefault().getAllSubTask());
+        System.out.println(managers.getDefault().getAllEpic());
 
-        System.out.println(managerTask.getSubTaskInSpecificEpic(1));
+        System.out.println(managers.getDefault().getSubTaskInSpecificEpic(1));
 
+        managers.getDefault().getTaskById(1);
+        managers.getDefault().getSubTaskById(1);
+        managers.getDefault().getEpicById(1);
+        System.out.println("Список просмотров: " + managers.getDefault().getHistory());
 
-
+        //создал новый интерфейс и новый класс
+        //Заимплементил классу InMemoryTaskManager 2 интерфейс HistoryManager переопределил в нем методо Add
     }
 }
