@@ -11,11 +11,17 @@ import java.util.LinkedList;
 
 public class InMemoryTaskManager implements TaskManager {
 
-    public HashMap<Integer, Task> taskStorage = new HashMap<>();
-    public HashMap<Integer, SubTask> subTaskStorage = new HashMap<>();
-    public HashMap<Integer, Epic> epicStorage = new HashMap<>();
+    public HashMap<Integer, Task> taskStorage;
+    public HashMap<Integer, SubTask> subTaskStorage;
+    public HashMap<Integer, Epic> epicStorage;
+    public InMemoryHistoryManager inMemoryHistoryManager;
 
-    public LinkedList<Task> historyList = new LinkedList<>();
+    public InMemoryTaskManager(){
+        taskStorage = new HashMap<>();
+        subTaskStorage = new HashMap<>();
+        epicStorage = new HashMap<>();
+        inMemoryHistoryManager = new InMemoryHistoryManager();
+    }
 
     int taskId = 1;
     int subTaskId = 1;
@@ -63,34 +69,19 @@ public class InMemoryTaskManager implements TaskManager {
     // ПОЛУЧЕНИЕ ОБЪЕКТОВ ПО ID
     @Override
     public Task getTaskById(int id) {
-        if (historyList.size() < 10) {
-            historyList.add(taskStorage.get(id)); //добавил в лист просмотров
-        } else {
-            historyList.removeFirst();
-            historyList.add(taskStorage.get(id));
-        }
+        inMemoryHistoryManager.add(taskStorage.get(id));
         return taskStorage.get(id);
     }
 
     @Override
     public SubTask getSubTaskById(int id) {
-        if (historyList.size() < 10) {
-            historyList.add(subTaskStorage.get(id));
-        } else {
-            historyList.removeFirst();
-            historyList.add(subTaskStorage.get(id));
-        }
+       inMemoryHistoryManager.add(subTaskStorage.get(id));
         return subTaskStorage.get(id);
     }
 
     @Override
     public Epic getEpicById(int id) {
-        if (historyList.size() < 10) {
-            historyList.add(epicStorage.get(id));
-        } else {
-            historyList.removeFirst();
-            historyList.add(epicStorage.get(id));
-        }
+        inMemoryHistoryManager.add(epicStorage.get(id));
         return epicStorage.get(id);
     }
 
@@ -177,7 +168,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public LinkedList<Task> getHistory() {
-        return historyList;
+        return InMemoryHistoryManager.historyList;
     }
 
     @Override

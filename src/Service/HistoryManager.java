@@ -1,13 +1,12 @@
 package Service;
 
 import Model.Task;
-
-import java.util.LinkedList;
+import java.util.List;
 
 public interface HistoryManager {
 
     void add(Task task);//должен помечать задачи как просмотренные
 
-    LinkedList<Task> getHistory();
+    List<Task> getHistory();
 
 }
