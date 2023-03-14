@@ -7,20 +7,21 @@ import Model.Status;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.List;
 
 public class InMemoryTaskManager implements TaskManager {
 
-    public HashMap<Integer, Task> taskStorage;
-    public HashMap<Integer, SubTask> subTaskStorage;
-    public HashMap<Integer, Epic> epicStorage;
-    public InMemoryHistoryManager inMemoryHistoryManager;
+    private final HashMap<Integer, Task> taskStorage;
+    private final HashMap<Integer, SubTask> subTaskStorage;
+    private final HashMap<Integer, Epic> epicStorage;
+    public HistoryManager inMemoryHistoryManager;
 
     public InMemoryTaskManager(){
         taskStorage = new HashMap<>();
         subTaskStorage = new HashMap<>();
         epicStorage = new HashMap<>();
-        inMemoryHistoryManager = new InMemoryHistoryManager();
+        inMemoryHistoryManager = Managers.getDefaultHistory();
+        // 24 строка - HistoryManager inMemoryHistoryManager = new InMemoryHistoryManager()
     }
 
     int taskId = 1;
@@ -167,8 +168,8 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public LinkedList<Task> getHistory() {
-        return InMemoryHistoryManager.historyList;
+    public List<Task> getHistory() {
+        return inMemoryHistoryManager.getHistory();
     }
 
     @Override

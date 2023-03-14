@@ -46,7 +46,7 @@ public class Main {
 
         System.out.println(manager.getSubTaskInSpecificEpic(1));
 
-        manager.getTaskById(1);
+        manager.getTaskById(3);
         manager.getSubTaskById(1);
         manager.getEpicById(1);
         System.out.println("Список просмотров: " + manager.getHistory());

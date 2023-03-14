@@ -6,6 +6,7 @@ import Model.Task;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 public interface TaskManager {// сделать интерфейсом перенести все в InMemory
 
@@ -55,5 +56,5 @@ public interface TaskManager {// сделать интерфейсом пере�
 
     Epic updateStatusInEpic(Epic epic);
 
-    LinkedList<Task> getHistory();
+    List<Task> getHistory();
 }
