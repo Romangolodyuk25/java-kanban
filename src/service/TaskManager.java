@@ -31,11 +31,11 @@ public interface TaskManager {// сделать интерфейсом пере�
     Epic getEpicById(int id);
 
     //СОЗДАНИЕ ОБЪЕКТОВ.
-    void createTask(Task newTask);
+    int createTask(Task newTask);
 
-    void createSubTask(SubTask newSubTask);
+    int createSubTask(SubTask newSubTask);
 
-    void createEpic(Epic newEpic);
+    int createEpic(Epic newEpic);
 
     //ОБНОВЛЕНИЕ
     void updateTask(Task task);

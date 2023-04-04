@@ -5,6 +5,7 @@ import model.SubTask;
 import model.Task;
 import model.Status;
 
+import java.security.spec.ECPoint;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +25,7 @@ public class InMemoryTaskManager implements TaskManager {
         // 23 строка - HistoryManager inMemoryHistoryManager = new InMemoryHistoryManager()
     }
 
-    int taskId = 1;
+    int taskId = 10;
     int subTaskId = 1;
     int epicTaskId = 1;
 
@@ -49,11 +50,19 @@ public class InMemoryTaskManager implements TaskManager {
     // УДАЛЕНИЕ ВСЕХ ОБЪЕКТОВ
     @Override
     public void deleteAllTasks() {
+        for(Task task : taskStorage.values()){
+            int id = task.getId();
+            inMemoryHistoryManager.remove(id);
+        }
         taskStorage.clear();
     }
 
     @Override
     public void deleteAllSubTasks() {
+        for(SubTask subTask : subTaskStorage.values()){
+            int id = subTask.getId();
+            inMemoryHistoryManager.remove(id);
+        }
         for (Epic epic : epicStorage.values()) {
             epic.clearListSubTaskId();
         }
@@ -63,6 +72,13 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deleteAllEpic() {
+        for(Epic epic : epicStorage.values()){
+            int id = epic.getId();
+            for (Integer i : epic.getAllListSubTaskId()) {
+               inMemoryHistoryManager.remove(i);
+            }
+            inMemoryHistoryManager.remove(id);
+        }
         epicStorage.clear();
         subTaskStorage.clear();// при удалении эпика будут стираться все SubTask без эпика нет SubTask
     }
@@ -70,32 +86,37 @@ public class InMemoryTaskManager implements TaskManager {
     // ПОЛУЧЕНИЕ ОБЪЕКТОВ ПО ID
     @Override
     public Task getTaskById(int id) {
-        inMemoryHistoryManager.add(taskStorage.get(id));
-        return taskStorage.get(id);
+        final Task task = taskStorage.get(id);
+        inMemoryHistoryManager.add(task);
+        return task;
     }
 
     @Override
     public SubTask getSubTaskById(int id) {
-       inMemoryHistoryManager.add(subTaskStorage.get(id));
-        return subTaskStorage.get(id);
+        final SubTask subTask = subTaskStorage.get(id);
+        inMemoryHistoryManager.add(subTask);
+        return subTask;
+
     }
 
     @Override
     public Epic getEpicById(int id) {
-        inMemoryHistoryManager.add(epicStorage.get(id));
-        return epicStorage.get(id);
+        final Epic epic = epicStorage.get(id);
+        inMemoryHistoryManager.add(epic);
+        return epic;
     }
 
     //СОЗДАНИЕ ОБЪЕКТОВ.
     @Override
-    public void createTask(Task newTask) {
+    public int createTask(Task newTask) {
         newTask.setId(taskId);
         taskStorage.put(taskId, newTask);
         taskId++;
+        return taskId - 1;
     }
 
     @Override
-    public void createSubTask(SubTask newSubTask) {//int epicId хранится в самой подзадаче
+    public int createSubTask(SubTask newSubTask) {//int epicId хранится в самой подзадаче
         newSubTask.setId(subTaskId);
         Epic epicName;
         if (epicStorage.containsKey(newSubTask.getIdEpic())) {
@@ -106,13 +127,15 @@ public class InMemoryTaskManager implements TaskManager {
         } else {
             System.out.println("Подзадача не может существовать без эпика");
         }
+        return subTaskId - 1;
     }
 
     @Override
-    public void createEpic(Epic newEpic) {
+    public int createEpic(Epic newEpic) {
         newEpic.setId(epicTaskId);
         epicStorage.put(epicTaskId, newEpic);
         epicTaskId++;
+        return epicTaskId - 1;
     }
 
     //ОБНОВЛЕНИЕ
@@ -164,6 +187,7 @@ public class InMemoryTaskManager implements TaskManager {
         epicStorage.remove(id);
         for (Integer i : listSubTaskId) {
             subTaskStorage.remove(i);
+            inMemoryHistoryManager.remove(i);
         }
         // если удаляется эпик, то удаляются все саб таски
         inMemoryHistoryManager.remove(id);

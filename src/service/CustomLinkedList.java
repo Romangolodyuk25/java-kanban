@@ -1,6 +1,5 @@
 package service;
 
-import model.Node;
 import model.Task;
 
 import java.util.ArrayList;
@@ -10,9 +9,8 @@ import java.util.Map;
 
 public class CustomLinkedList<T extends Task> {
 
-    public Node<T> head;
-    public Node<T> tail;
-    int size = 0;
+    private Node<T> head;
+    private Node<T> tail;
 
     private final Map<Integer, Node<T>> idAndNodeTaskMap;//d мапе храниться по АЙДИ задачи - Таскав Ноде
 
@@ -20,40 +18,23 @@ public class CustomLinkedList<T extends Task> {
         this.idAndNodeTaskMap = new HashMap<>();
     }
 
-    public void linkLast(T node) {
-        Node<T> newNode = new Node<T>(node);
+    public void linkLast(T task) {
+        final int id = task.getId();
+        remove(id);
 
-        if (this.head == null) {
-            this.head = newNode;
-            this.tail = newNode;
-            idAndNodeTaskMap.put(node.getId(), newNode); //нужно положить задачу в мапу что бы знать где какая нода по айди задачи
-            size++;
-            return;
-        }
-        remove(node.getId());
+        Node<T> newNode = new Node<>(tail, task, null);//при создании новой ноды она будет ссылаться на хвост
 
-        if (this.tail != null) {
-            this.tail.next = newNode;
+        if (head == null) {
+            head = newNode;
+        }else {
+            tail.next = newNode;
         }
-        this.tail = newNode;
-        idAndNodeTaskMap.put(node.getId(), newNode); //нужно положить задачу в мапу что бы знать где какая нода по айди задачи
-        size++;
-        /**либо с помощью цикла
-         * Node<T> currentNode = head;
-         * while(currentNode.next!=null){
-         * currentNode = currentNode.next
-         * }
-         * currentNode = new Node<T>(node);
-         */
+        tail = newNode;
+        idAndNodeTaskMap.put(task.getId(), newNode); //нужно положить задачу в мапу что бы знать где какая нода по айди задачи
     }
 
     public List<Task> getTasks() {
         List<Task> historyList = new ArrayList<>();
-
-        if (this.head == null) {
-            System.out.println("Связный список пустой");
-            return historyList;
-        }
         Node<T> currentNode = head;
 
         while (currentNode != null) {
@@ -64,19 +45,20 @@ public class CustomLinkedList<T extends Task> {
     }
 
     public void removeNode(Node<T> node) {
-        Node<T> nextNode = node.next;
-        Node<T> prevNode = node.prev;
-        if (node == head) {
-            head = nextNode;
-        }
-        if (node == tail) {
-            tail = prevNode;
-        }
-        if (prevNode != null) {
-            node.prev.next = nextNode;//ссылаюсь на ПРЕДЫДУЩИЙ узел говорю что ОН указывает теперь на СЛЕДУБЩИЙ узел
-        }
-        if (nextNode != null) {
-            node.next.prev = prevNode;//ссылаюсь на CЛЕДУЮЩИЙ УЗЕЛ говорю что он указывает теперь ПРЕДЫДУЩИЙ узел
+        if (node.prev != null) {
+            node.prev.next = node.next;
+            if (node.next == null) { // значит нода удалиться и ее предыдущая станет последней
+                tail = node.prev;
+            } else {
+                node.next.prev = node.prev;
+            }
+        } else { // если у ноды предыдущий элемент null, значит нода которая пришла была ПЕРВОЙ, а значет некст ссылку перекинем
+            head = node.next;
+            if (head == null) {
+                tail = null;
+            } else {
+                head.prev = null;
+            }
         }
     }
 
@@ -84,6 +66,18 @@ public class CustomLinkedList<T extends Task> {
         if (idAndNodeTaskMap.containsKey(id)) {
             removeNode(idAndNodeTaskMap.get(id));
             idAndNodeTaskMap.remove(id);
+        }
+    }
+
+    class Node<T> {
+        public T value;
+        public Node<T> prev;
+        public Node<T> next;
+
+        public Node(Node<T> prev, T value, Node<T> next) {
+            this.value = value;
+            this.next = next;
+            this.prev = prev;
         }
     }
 }

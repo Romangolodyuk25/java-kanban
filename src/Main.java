@@ -10,45 +10,34 @@ public class Main {
     public static void main(String[] args) {
         TaskManager manager = Managers.getDefault();
                 
-        Task task;
-        SubTask subTask;
-        Epic epic;
-
-        task = new Task("Переезд", "Я буду переезжать", Status.NEW);
-        epic = new Epic("Мы переезжаем", "Много задач по переезду", Status.NEW);
-        subTask = new SubTask("Собрать вещи", "Разложить вещи в чемодан", Status.IN_PROGRESS,1);
-        SubTask subTask1 = new SubTask("Съездить на вокзала за билетами",
-                "Купить билеты на 15 число", Status.IN_PROGRESS,1);
-
-        manager.createTask(task);
-        manager.createEpic(epic);
-        manager.createSubTask(subTask);
-        manager.createSubTask(subTask1);
 
 
-        System.out.println(manager.getAllTasks());
-        System.out.println(manager.getAllSubTask());
-        System.out.println(manager.getAllEpic());
+        Task task = new Task("Переезд", "Я буду переезжать", Status.NEW);
+        Epic epic1 = new Epic("Мы переезжаем", "Много задач по переезду", Status.NEW);
+        SubTask subTask1 = new SubTask("Собрать вещи", "Разложить вещи в чемодан", Status.IN_PROGRESS,1);
+        SubTask subTask2 = new SubTask("Съездить на вокзала за билетами", "Купить билеты на 15 число", Status.IN_PROGRESS,1);
+        SubTask subTask3 = new SubTask("Подсидеть на дорожку", "Присесть на чемодан", Status.IN_PROGRESS,1);
+        Epic epic2 = new Epic("Отпраздновать приезд", "Жестка набухаться до рыготины", Status.NEW);
 
-        Task newUpdateTask = new Task("Переезд", "Я буду переезжать", Status.IN_PROGRESS);
-        manager.updateTask(newUpdateTask);
 
-        SubTask newUpdateSubTask = new SubTask("Собрать вещи", "Разложить вещи в чемодан", Status.NEW, 1);
-        manager.updateSubTask(newUpdateSubTask);
+        int idTask = manager.createTask(task);
+        int idEpic1 = manager.createEpic(epic1);
+        int idSubTask1 = manager.createSubTask(subTask1);
+        int idSubTask2 = manager.createSubTask(subTask2);
+        int idSubTask3 = manager.createSubTask(subTask3);
+        int idEpic2 = manager.createEpic(epic2);
 
-        SubTask newUpdateSubTask1 = new SubTask("Съездить на вокзала за билетами","Купить билеты на 15 число",
-                Status.NEW,2);
-        manager.updateSubTask(newUpdateSubTask1);
+        manager.getTaskById(idTask);
+        manager.getSubTaskById(idSubTask1);
+        manager.getSubTaskById(idSubTask2);
+        manager.getSubTaskById(idSubTask3);
+        manager.getEpicById(idEpic1);
+        manager.getEpicById(idEpic2);
 
-        System.out.println(manager.getAllTasks());
-        System.out.println(manager.getAllSubTask());
-        System.out.println(manager.getAllEpic());
+        //manager.deleteTaskById(10);
 
-        System.out.println(manager.getSubTaskInSpecificEpic(1));
+        //manager.deleteEpicById(1);
 
-        manager.getTaskById(3);
-        manager.getSubTaskById(1);
-        manager.getEpicById(1);
         System.out.println("Список просмотров: " + manager.getHistory());
 
         //создал новый интерфейс и новый класс
