@@ -1,9 +1,9 @@
-package Service;
+package service;
 
-import Model.Epic;
-import Model.SubTask;
-import Model.Task;
-import Model.Status;
+import model.Epic;
+import model.SubTask;
+import model.Task;
+import model.Status;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,7 +21,7 @@ public class InMemoryTaskManager implements TaskManager {
         subTaskStorage = new HashMap<>();
         epicStorage = new HashMap<>();
         inMemoryHistoryManager = Managers.getDefaultHistory();
-        // 24 строка - HistoryManager inMemoryHistoryManager = new InMemoryHistoryManager()
+        // 23 строка - HistoryManager inMemoryHistoryManager = new InMemoryHistoryManager()
     }
 
     int taskId = 1;
@@ -145,6 +145,7 @@ public class InMemoryTaskManager implements TaskManager {
     @Override
     public void deleteTaskById(int id) {
         taskStorage.remove(id);
+        inMemoryHistoryManager.remove(id);
     }
 
     @Override
@@ -153,7 +154,7 @@ public class InMemoryTaskManager implements TaskManager {
         epicStorage.get(idCountEpic).removeSubTuskId(id);
         updateStatusInEpic(epicStorage.get(idCountEpic));
         subTaskStorage.remove(id);
-
+        inMemoryHistoryManager.remove(id);
         // после удаления саб таски, ее нужно удалить из определенного эпика
     }
 
@@ -165,6 +166,7 @@ public class InMemoryTaskManager implements TaskManager {
             subTaskStorage.remove(i);
         }
         // если удаляется эпик, то удаляются все саб таски
+        inMemoryHistoryManager.remove(id);
     }
 
     @Override

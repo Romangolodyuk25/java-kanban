@@ -1,6 +1,6 @@
-package Service;
+package service;
 
-import Model.Task;
+import model.Task;
 import java.util.List;
 
 public interface HistoryManager {
@@ -8,5 +8,7 @@ public interface HistoryManager {
     void add(Task task);//должен помечать задачи как просмотренные
 
     List<Task> getHistory();
+
+    void remove(int id);
 
 }

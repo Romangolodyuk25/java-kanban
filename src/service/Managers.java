@@ -1,7 +1,4 @@
-package Service;
-
-import java.util.ArrayList;
-import java.util.List;
+package service;
 
 public class Managers {
 
