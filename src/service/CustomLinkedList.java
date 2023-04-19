@@ -19,6 +19,10 @@ public class CustomLinkedList<T extends Task> {
     }
 
     public void linkLast(T task) {
+        if (task == null){
+            System.out.println("В объекте null");
+            return;
+        }
         final int id = task.getId();
         remove(id);
 
@@ -30,7 +34,7 @@ public class CustomLinkedList<T extends Task> {
             tail.next = newNode;
         }
         tail = newNode;
-        idAndNodeTaskMap.put(task.getId(), newNode); //нужно положить задачу в мапу что бы знать где какая нода по айди задачи
+        idAndNodeTaskMap.put(id, newNode); //нужно положить задачу в мапу что бы знать где какая нода по айди задачи
     }
 
     public List<Task> getTasks() {
@@ -44,7 +48,7 @@ public class CustomLinkedList<T extends Task> {
         return historyList;
     }
 
-    public void removeNode(Node<T> node) {
+    private void removeNode(Node<T> node) {
         if (node.prev != null) {
             node.prev.next = node.next;
             if (node.next == null) { // значит нода удалиться и ее предыдущая станет последней

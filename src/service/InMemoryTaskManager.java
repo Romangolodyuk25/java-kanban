@@ -5,6 +5,7 @@ import model.SubTask;
 import model.Task;
 import model.Status;
 
+import java.io.IOException;
 import java.security.spec.ECPoint;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,19 +16,16 @@ public class InMemoryTaskManager implements TaskManager {
     private final HashMap<Integer, Task> taskStorage;
     private final HashMap<Integer, SubTask> subTaskStorage;
     private final HashMap<Integer, Epic> epicStorage;
-    public HistoryManager inMemoryHistoryManager;
+    protected final HistoryManager inMemoryHistoryManager;
+    private int id = 1;
 
     public InMemoryTaskManager(){
         taskStorage = new HashMap<>();
         subTaskStorage = new HashMap<>();
         epicStorage = new HashMap<>();
         inMemoryHistoryManager = Managers.getDefaultHistory();
-        // 23 строка - HistoryManager inMemoryHistoryManager = new InMemoryHistoryManager()
+        // 24 строка - HistoryManager inMemoryHistoryManager = new InMemoryHistoryManager()
     }
-
-    int taskId = 10;
-    int subTaskId = 1;
-    int epicTaskId = 1;
 
 
     // ПОЛУЧЕНИЕ ВСЕХ ОБЪЕКТОВ
@@ -49,7 +47,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     // УДАЛЕНИЕ ВСЕХ ОБЪЕКТОВ
     @Override
-    public void deleteAllTasks() {
+    public void deleteAllTasks() throws IOException {
         for(Task task : taskStorage.values()){
             int id = task.getId();
             inMemoryHistoryManager.remove(id);
@@ -58,7 +56,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void deleteAllSubTasks() {
+    public void deleteAllSubTasks() throws IOException {
         for(SubTask subTask : subTaskStorage.values()){
             int id = subTask.getId();
             inMemoryHistoryManager.remove(id);
@@ -71,7 +69,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void deleteAllEpic() {
+    public void deleteAllEpic() throws IOException {
         for(Epic epic : epicStorage.values()){
             int id = epic.getId();
             for (Integer i : epic.getAllListSubTaskId()) {
@@ -85,14 +83,14 @@ public class InMemoryTaskManager implements TaskManager {
 
     // ПОЛУЧЕНИЕ ОБЪЕКТОВ ПО ID
     @Override
-    public Task getTaskById(int id) {
+    public Task getTaskById(int id) throws IOException {
         final Task task = taskStorage.get(id);
         inMemoryHistoryManager.add(task);
         return task;
     }
 
     @Override
-    public SubTask getSubTaskById(int id) {
+    public SubTask getSubTaskById(int id) throws IOException {
         final SubTask subTask = subTaskStorage.get(id);
         inMemoryHistoryManager.add(subTask);
         return subTask;
@@ -100,7 +98,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public Epic getEpicById(int id) {
+    public Epic getEpicById(int id) throws IOException {
         final Epic epic = epicStorage.get(id);
         inMemoryHistoryManager.add(epic);
         return epic;
@@ -108,45 +106,45 @@ public class InMemoryTaskManager implements TaskManager {
 
     //СОЗДАНИЕ ОБЪЕКТОВ.
     @Override
-    public int createTask(Task newTask) {
-        newTask.setId(taskId);
-        taskStorage.put(taskId, newTask);
-        taskId++;
-        return taskId - 1;
+    public int createTask(Task newTask) throws IOException {
+        newTask.setId(id);
+        taskStorage.put(id, newTask);
+        id++;
+        return id - 1;
     }
 
     @Override
-    public int createSubTask(SubTask newSubTask) {//int epicId хранится в самой подзадаче
-        newSubTask.setId(subTaskId);
+    public int createSubTask(SubTask newSubTask) throws IOException {//int epicId хранится в самой подзадаче
+        newSubTask.setId(id);
         Epic epicName;
         if (epicStorage.containsKey(newSubTask.getIdEpic())) {
             epicName = epicStorage.get(newSubTask.getIdEpic());
             epicName.addListSubTaskId(newSubTask.getId());
-            subTaskStorage.put(subTaskId, newSubTask);
-            subTaskId++;
+            subTaskStorage.put(id, newSubTask);
+            id++;
         } else {
             System.out.println("Подзадача не может существовать без эпика");
         }
-        return subTaskId - 1;
+        return id - 1;
     }
 
     @Override
-    public int createEpic(Epic newEpic) {
-        newEpic.setId(epicTaskId);
-        epicStorage.put(epicTaskId, newEpic);
-        epicTaskId++;
-        return epicTaskId - 1;
+    public int createEpic(Epic newEpic) throws IOException {
+        newEpic.setId(id);
+        epicStorage.put(id, newEpic);
+        id++;
+        return id - 1;
     }
 
     //ОБНОВЛЕНИЕ
 
     @Override
-    public void updateTask(Task task) {
+    public void updateTask(Task task) throws IOException {
         taskStorage.put(task.getId(), task);
     }
 
     @Override
-    public void updateSubTask(SubTask subTask) {
+    public void updateSubTask(SubTask subTask) throws IOException {
         if (subTaskStorage.containsKey(subTask.getId()) && epicStorage.containsKey(subTask.getIdEpic())) {//проверил айди в SubTask и айди Epic
             subTaskStorage.put(subTask.getId(), subTask);
             Epic newEpic = epicStorage.get(subTask.getIdEpic()); //достал епик указанный в SubTask
@@ -157,7 +155,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void updateEpic(Epic epic) {
+    public void updateEpic(Epic epic) throws IOException {
         //не использую epicStorage.put(pic.getId(), epic) потому что могу затереть поля (например SubTaskListId)
         Epic savedEpic = epicStorage.get(epic.getId());
         savedEpic.setName(epic.getName());
@@ -166,13 +164,13 @@ public class InMemoryTaskManager implements TaskManager {
 
     //УДАЛЕНИЕ ПО ID
     @Override
-    public void deleteTaskById(int id) {
+    public void deleteTaskById(int id) throws IOException {
         taskStorage.remove(id);
         inMemoryHistoryManager.remove(id);
     }
 
     @Override
-    public void deleteSubTaskById(int id) {
+    public void deleteSubTaskById(int id) throws IOException {
         int idCountEpic = subTaskStorage.get(id).getIdEpic();
         epicStorage.get(idCountEpic).removeSubTuskId(id);
         updateStatusInEpic(epicStorage.get(idCountEpic));
@@ -182,7 +180,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void deleteEpicById(int id) {
+    public void deleteEpicById(int id) throws IOException {
         ArrayList<Integer> listSubTaskId = epicStorage.get(id).getAllListSubTaskId();
         epicStorage.remove(id);
         for (Integer i : listSubTaskId) {
@@ -212,7 +210,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public Epic updateStatusInEpic(Epic epic) {
+    public Epic updateStatusInEpic(Epic epic) throws IOException {
         int subTasksStatusInProgressOrDone = 0;
         int subTasksStatusIsNewOrProgress = 0;
 

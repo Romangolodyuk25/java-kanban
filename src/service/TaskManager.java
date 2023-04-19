@@ -4,6 +4,7 @@ import model.Epic;
 import model.SubTask;
 import model.Task;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,43 +18,43 @@ public interface TaskManager {// сделать интерфейсом пере�
     ArrayList<Epic> getAllEpic();
 
     // УДАЛЕНИЕ ВСЕХ ОБЪЕКТОВ
-    void deleteAllTasks();
+    void deleteAllTasks() throws IOException;
 
-    void deleteAllSubTasks();
+    void deleteAllSubTasks() throws IOException;
 
-    void deleteAllEpic();
+    void deleteAllEpic() throws IOException;
 
     // ПОЛУЧЕНИЕ ОБЪЕКТОВ ПО ID
-    Task getTaskById(int id);
+    Task getTaskById(int id) throws IOException;
 
-    SubTask getSubTaskById(int id);
+    SubTask getSubTaskById(int id) throws IOException;
 
-    Epic getEpicById(int id);
+    Epic getEpicById(int id) throws IOException;
 
     //СОЗДАНИЕ ОБЪЕКТОВ.
-    int createTask(Task newTask);
+    int createTask(Task newTask) throws IOException;
 
-    int createSubTask(SubTask newSubTask);
+    int createSubTask(SubTask newSubTask) throws IOException;
 
-    int createEpic(Epic newEpic);
+    int createEpic(Epic newEpic) throws IOException;
 
     //ОБНОВЛЕНИЕ
-    void updateTask(Task task);
+    void updateTask(Task task) throws IOException;
 
-    void updateSubTask(SubTask subTask);
+    void updateSubTask(SubTask subTask) throws IOException;
 
-    void updateEpic(Epic epic);
+    void updateEpic(Epic epic) throws IOException;
 
     //УДАЛЕНИЕ ПО ID
-    void deleteTaskById(int id);
+    void deleteTaskById(int id) throws IOException;
 
-    void deleteSubTaskById(int id);
+    void deleteSubTaskById(int id) throws IOException;
 
-    void deleteEpicById(int id);
+    void deleteEpicById(int id) throws IOException;
 
     ArrayList<SubTask> getSubTaskInSpecificEpic(int idEpic);
 
-    Epic updateStatusInEpic(Epic epic);
+    Epic updateStatusInEpic(Epic epic) throws IOException;
 
     List<Task> getHistory();
 }
