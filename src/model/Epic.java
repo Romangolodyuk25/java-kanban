@@ -11,16 +11,21 @@ public class Epic extends Task {
         super(nameTask, description, status);
     }
 
+    public Epic(String nameTask, String description, Status status, int id) {
+        super(nameTask, description, status, id);
+    }
+
+    @Override
+    public TaskType getType(){
+        return TaskType.EPIC;
+    }
+
     public void addListSubTaskId(int id){
         subTaskListId.add(id);
     }
 
     public ArrayList<Integer> getAllListSubTaskId(){
         return subTaskListId;
-    }
-
-    public void setSubTaskListId(ArrayList<Integer> subTaskListId) {
-        this.subTaskListId = subTaskListId;
     }
 
     public void clearListSubTaskId(){

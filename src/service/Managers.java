@@ -13,7 +13,7 @@ public class Managers {
         return new InMemoryHistoryManager();
     }
 
-    public static TaskManager getDefaultFileBackedTasksManager() throws IOException {
-        return new FileBackedTasksManager("testFile.csv");
+    public static FileBackedTasksManager getDefaultFileBackedTasksManager() throws IOException {
+        return new FileBackedTasksManager(new File("testFile.csv"));
     }
 }

@@ -18,43 +18,43 @@ public interface TaskManager {// сделать интерфейсом пере�
     ArrayList<Epic> getAllEpic();
 
     // УДАЛЕНИЕ ВСЕХ ОБЪЕКТОВ
-    void deleteAllTasks() throws IOException;
+    void deleteAllTasks();
 
-    void deleteAllSubTasks() throws IOException;
+    void deleteAllSubTasks();
 
-    void deleteAllEpic() throws IOException;
+    void deleteAllEpic();
 
     // ПОЛУЧЕНИЕ ОБЪЕКТОВ ПО ID
-    Task getTaskById(int id) throws IOException;
+    Task getTaskById(int id);
 
-    SubTask getSubTaskById(int id) throws IOException;
+    SubTask getSubTaskById(int id);
 
-    Epic getEpicById(int id) throws IOException;
+    Epic getEpicById(int id);
 
     //СОЗДАНИЕ ОБЪЕКТОВ.
-    int createTask(Task newTask) throws IOException;
+    int createTask(Task newTask);
 
-    int createSubTask(SubTask newSubTask) throws IOException;
+    int createSubTask(SubTask newSubTask);
 
-    int createEpic(Epic newEpic) throws IOException;
+    int createEpic(Epic newEpic);
 
     //ОБНОВЛЕНИЕ
-    void updateTask(Task task) throws IOException;
+    void updateTask(Task task);
 
-    void updateSubTask(SubTask subTask) throws IOException;
+    void updateSubTask(SubTask subTask);
 
-    void updateEpic(Epic epic) throws IOException;
+    void updateEpic(Epic epic);
 
     //УДАЛЕНИЕ ПО ID
-    void deleteTaskById(int id) throws IOException;
+    void deleteTaskById(int id);
 
-    void deleteSubTaskById(int id) throws IOException;
+    void deleteSubTaskById(int id);
 
-    void deleteEpicById(int id) throws IOException;
+    void deleteEpicById(int id);
 
     ArrayList<SubTask> getSubTaskInSpecificEpic(int idEpic);
 
-    Epic updateStatusInEpic(Epic epic) throws IOException;
+    Epic updateStatusInEpic(Epic epic);
 
     List<Task> getHistory();
 }

@@ -8,6 +8,7 @@ import service.TaskManager;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 
 
 public class Main {
@@ -36,14 +37,27 @@ public class Main {
         manager.getEpicById(idEpic1);
         manager.getEpicById(idEpic2);
 
-        //manager.deleteTaskById(10);
+//        manager.deleteTaskById(10);
+//
+//        manager.deleteEpicById(1);
 
-        //manager.deleteEpicById(1);
+//        FileBackedTasksManager manager = new FileBackedTasksManager("testFile.csv");
+//        FileBackedTasksManager.loadFromFile(manager.file.toFile());
 
         System.out.println("Список просмотров: " + manager.getHistory());
 
+        FileBackedTasksManager manager2 = FileBackedTasksManager.loadFromFile(Paths.get("testFile.csv").toFile());
 
-        //создал новый интерфейс и новый класс
-        //Заимплементил классу InMemoryTaskManager 2 интерфейс HistoryManager переопределил в нем методо Add
+        System.out.println(manager.getAllTasks());
+        System.out.println(manager.getAllSubTask());
+        System.out.println(manager.getAllEpic());
+
+        System.out.println();
+
+        System.out.println(manager2.getAllTasks());
+        System.out.println(manager2.getAllSubTask());
+        System.out.println(manager2.getAllEpic());
+
+        System.out.println("Список просмотров во 2 менеджере " + manager2.getHistory());
     }
 }
