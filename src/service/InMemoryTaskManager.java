@@ -17,7 +17,7 @@ public class InMemoryTaskManager implements TaskManager {
     protected final HashMap<Integer, SubTask> subTaskStorage;
     protected final HashMap<Integer, Epic> epicStorage;
     protected final HistoryManager inMemoryHistoryManager;
-    private int id = 1;
+    protected int id = 1;
 
     public InMemoryTaskManager() {
         taskStorage = new HashMap<>();
@@ -26,7 +26,6 @@ public class InMemoryTaskManager implements TaskManager {
         inMemoryHistoryManager = Managers.getDefaultHistory();
         // 24 строка - HistoryManager inMemoryHistoryManager = new InMemoryHistoryManager()
     }
-
 
     // ПОЛУЧЕНИЕ ВСЕХ ОБЪЕКТОВ
     @Override

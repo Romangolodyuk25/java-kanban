@@ -18,7 +18,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             System.out.println("Файл не был создан");
             return;
         }
-        try (FileWriter fileWriter = new FileWriter(file.toString())) {
+        try (FileWriter fileWriter = new FileWriter(file)) {
             fileWriter.write(createFirstString());
             for (Task task : getAllTasks()) {
                 fileWriter.write(toString(task));
@@ -38,12 +38,12 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         }
     }
 
-    public static FileBackedTasksManager loadFromFile(File file) throws IOException {
+    public static FileBackedTasksManager loadFromFile(File file){
         FileBackedTasksManager manager = Managers.getDefaultFileBackedTasksManager();
-
         try (FileReader fileReader = new FileReader(file.getName());
              BufferedReader bufferedReader = new BufferedReader(fileReader)) {
              ArrayList<Integer> historyList = new ArrayList<>();
+             int generatorId = 0;
 
              bufferedReader.readLine();// считал header;
 
@@ -53,14 +53,13 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                 if (!readLine.isEmpty()) {
                 Task newTask = manager.fromString(readLine);
                 if (newTask!=null) {
+                    if (newTask.getId() > generatorId){
+                        generatorId = newTask.getId();
+                    }
                     if (newTask.getType() == TaskType.SUBTASK) {
                         SubTask newSubTask = (SubTask) newTask;
                         manager.subTaskStorage.put(newSubTask.getId(), newSubTask);
-                        for (Epic epic : manager.epicStorage.values()){
-                            if (newSubTask.getIdEpic() == epic.getId()) {
-                                epic.addListSubTaskId(newSubTask.getId());
-                            }
-                        }
+                        manager.epicStorage.get(newSubTask.getIdEpic()).addListSubTaskId(newTask.getId());
                     } else if (newTask.getType() == TaskType.EPIC) {
                         Epic newEpic = (Epic) newTask;
                         manager.epicStorage.put(newEpic.getId(), newEpic);
@@ -74,34 +73,23 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                     for (Integer id : historyList){
                         manager.inMemoryHistoryManager.add(manager.findTask(id));
                     }
+                    manager.id = generatorId;
                     break;
                 }
             }
+        } catch (IOException e){
+            throw new ManagerSaveException();
         }
         return manager;
     }
 
     private Task findTask(int id){
-        Task foundTask = null;
-        for (Integer taskId : taskStorage.keySet()) {
-            if (taskId == id){
-                foundTask = taskStorage.get(taskId);
-                return foundTask;
-            }
+        if (taskStorage.get(id) != null){
+            return taskStorage.get(id);
+        } else if (subTaskStorage.get(id) != null) {
+            return subTaskStorage.get(id);
         }
-        for (Integer subId : subTaskStorage.keySet()){
-            if (subId == id){
-                foundTask = (SubTask) subTaskStorage.get(id);
-                return foundTask;
-            }
-        }
-        for (Integer epicId : epicStorage.keySet()){
-            if (epicId == id){
-                foundTask = (Epic) epicStorage.get(id);
-                return foundTask;
-            }
-        }
-        return null;
+        return epicStorage.get(id);
     }
 
     private String createFirstString() {
@@ -112,11 +100,9 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         String epicId = "";
         if (task.getType() == TaskType.SUBTASK) {
             epicId = String.valueOf(((SubTask) task).getIdEpic());
-            return task.getId() + "," + TaskType.SUBTASK.name() + "," + task.getName() + "," +
-                    task.getStatus() + "," + task.getDescription() + "," + epicId + "\n";
         }
         return task.getId() + "," + task.getType() + "," + task.getName() + "," +
-                task.getStatus() + "," + task.getDescription() + "," + "\n";
+                task.getStatus() + "," + task.getDescription() + "," + epicId + "\n";
     }
 
     private Task fromString(String value) { //метод который должен создать задачу из Строки
