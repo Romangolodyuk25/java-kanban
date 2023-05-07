@@ -1,5 +1,7 @@
 package model;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 public class Task {
@@ -9,18 +11,40 @@ public class Task {
     protected String description;//(описание)
     protected int id;
     protected Status status;
+    protected LocalDateTime startTime;
+    protected int duration;
+
+    public Task(String name, String description,Status status, int id, LocalDateTime startTime, int duration) {
+        this.name = name;
+        this.description = description;
+        this.id = id;
+        this.status = status;
+        this.startTime = startTime;
+        this.duration = duration;
+    }
+
+    public Task(){
+        this.startTime = LocalDateTime.now();
+        this.duration = 0;
+    }
 
     public Task(String name, String description, Status status) {
+        this();
         this.name = name;
         this.description = description;
         this.status = status;
     }
 
     public Task(String name, String description, Status status, int id) {
+        this();
         this.name = name;
         this.description = description;
         this.status = status;
         this.id = id;
+    }
+
+    public LocalDateTime getEndTime() {
+        return startTime.plusMinutes(duration);
     }
 
     public String getName() {
@@ -58,6 +82,23 @@ public class Task {
     public void setStatus(Status status) {
         this.status = status;
     }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public int getDuration() {
+        return duration;
+    }
+
+    public void setDuration(int duration) {
+        this.duration = duration;
+    }
+
 
     @Override
     public boolean equals(Object o) {

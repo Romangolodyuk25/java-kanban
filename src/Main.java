@@ -6,13 +6,11 @@ import service.FileBackedTasksManager;
 import service.Managers;
 import service.TaskManager;
 
-import java.io.File;
-import java.io.IOException;
 import java.nio.file.Paths;
 
 
 public class Main {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args){
         TaskManager manager = Managers.getDefaultFileBackedTasksManager();
 
         Task task = new Task("Переезд", "Я буду переезжать", Status.NEW);
@@ -46,18 +44,18 @@ public class Main {
 
         System.out.println("Список просмотров: " + manager.getHistory());
 
-        FileBackedTasksManager manager2 = FileBackedTasksManager.loadFromFile(Paths.get("testFile.csv").toFile());
-
-        System.out.println(manager.getAllTasks());
-        System.out.println(manager.getAllSubTask());
-        System.out.println(manager.getAllEpic());
-
-        System.out.println();
-
-        System.out.println(manager2.getAllTasks());
-        System.out.println(manager2.getAllSubTask());
-        System.out.println(manager2.getAllEpic());
-
-        System.out.println("Список просмотров во 2 менеджере " + manager2.getHistory());
+//        FileBackedTasksManager manager2 = FileBackedTasksManager.loadFromFile(Paths.get("testFile.csv").toFile());
+//
+//        System.out.println(manager.getAllTasks());
+//        System.out.println(manager.getAllSubTask());
+//        System.out.println(manager.getAllEpic());
+//
+//        System.out.println();
+//
+//        System.out.println(manager2.getAllTasks());
+//        System.out.println(manager2.getAllSubTask());
+//        System.out.println(manager2.getAllEpic());
+//
+//        System.out.println("Список просмотров во 2 менеджере " + manager2.getHistory());
     }
 }

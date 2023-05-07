@@ -3,11 +3,14 @@ package service;
 import model.*;
 
 import java.io.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 public class FileBackedTasksManager extends InMemoryTaskManager {
     private final File file;
+    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     public FileBackedTasksManager(File file){
        this.file = file;
@@ -73,7 +76,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                     for (Integer id : historyList){
                         manager.inMemoryHistoryManager.add(manager.findTask(id));
                     }
-                    manager.id = generatorId;
+                    manager.id = generatorId + 1;
                     break;
                 }
             }
@@ -93,16 +96,25 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     private String createFirstString() {
-        return "id,type,name,status,description,epic" + "\n";
+        return "id,type,name,status,description,epic,start_time,duration,end_time" + "\n";
+        // TODO: Добавить поля start_time,duration,end_time, поменять методы парсинга(endTime может быть только у эпика)
     }
 
     private String toString(Task task) {// метод который должен сохранить задачу в строку
         String epicId = "";
+        LocalDateTime endTime = task.getEndTime();
         if (task.getType() == TaskType.SUBTASK) {
             epicId = String.valueOf(((SubTask) task).getIdEpic());
         }
+        if (task.getType() == TaskType.EPIC){
+            Epic epic = (Epic)task;
+            endTime = epic.getEndTime();
+        }
+        String endTimeStr = endTime == null ? "" : dateTimeFormatter.format(endTime);
         return task.getId() + "," + task.getType() + "," + task.getName() + "," +
-                task.getStatus() + "," + task.getDescription() + "," + epicId + "\n";
+                task.getStatus() + "," + task.getDescription() + "," + epicId + ","
+                + dateTimeFormatter.format(task.getStartTime()) + ","
+                + task.getDuration() + "," + endTimeStr + "\n";
     }
 
     private Task fromString(String value) { //метод который должен создать задачу из Строки
@@ -114,14 +126,22 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         Status statusTask = Status.valueOf(stringArr[3]);
         String descriptionName = stringArr[4];
         String epicId = "";
+        LocalDateTime startTime = null;
+        int duration = 0;
+        LocalDateTime endTime = null;
         if (typeTask.equals(TaskType.SUBTASK)){
             epicId = stringArr[5];
         }
+        startTime = LocalDateTime.parse(stringArr[6],dateTimeFormatter);
+        duration = Integer.parseInt(stringArr[7]);
+        if (!epicId.isEmpty()){
+            endTime = LocalDateTime.parse(stringArr[8],dateTimeFormatter);
+        }
 
         if (typeTask.equals(TaskType.TASK)) {
-            newTask = new Task(nameTask, descriptionName, statusTask, idTask);
+            newTask = new Task(nameTask, descriptionName, statusTask, idTask, startTime, duration);
         } else if (typeTask.equals(TaskType.SUBTASK)) {
-            newTask = new SubTask(nameTask, descriptionName, statusTask, Integer.parseInt(epicId), idTask);
+            newTask = new SubTask(nameTask, descriptionName, statusTask,idTask, Integer.parseInt(epicId), startTime, duration);
         } else if (typeTask.equals(TaskType.EPIC)) {
             newTask = new Epic(nameTask, descriptionName, statusTask, idTask);
         }
