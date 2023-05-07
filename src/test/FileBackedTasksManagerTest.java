@@ -74,6 +74,9 @@ public class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksM
 
     @Test
     public void shouldNotSaveIfTasksListEmpty() throws IOException {
+        if(!file.exists()){
+            Files.createFile(file.getAbsoluteFile().toPath());
+        }
         List<Task> tasks = getTaskManager().getAllTasks();
         try(FileReader fileReader = new FileReader(file.getName());
             BufferedReader bf = new BufferedReader(fileReader);
