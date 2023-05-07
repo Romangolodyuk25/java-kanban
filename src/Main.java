@@ -39,23 +39,23 @@ public class Main {
 //
 //        manager.deleteEpicById(1);
 
-//        FileBackedTasksManager manager = new FileBackedTasksManager("testFile.csv");
-//        FileBackedTasksManager.loadFromFile(manager.file.toFile());
 
         System.out.println("Список просмотров: " + manager.getHistory());
+        System.out.println("Приоритет задач" + manager.getPrioritizedTasks());
 
-//        FileBackedTasksManager manager2 = FileBackedTasksManager.loadFromFile(Paths.get("testFile.csv").toFile());
-//
-//        System.out.println(manager.getAllTasks());
-//        System.out.println(manager.getAllSubTask());
-//        System.out.println(manager.getAllEpic());
-//
-//        System.out.println();
-//
-//        System.out.println(manager2.getAllTasks());
-//        System.out.println(manager2.getAllSubTask());
-//        System.out.println(manager2.getAllEpic());
-//
-//        System.out.println("Список просмотров во 2 менеджере " + manager2.getHistory());
+        FileBackedTasksManager manager2 = FileBackedTasksManager.loadFromFile(Paths.get("testFile.csv").toFile());
+
+        System.out.println(manager.getAllTasks());
+        System.out.println(manager.getAllSubTask());
+        System.out.println(manager.getAllEpic());
+
+        System.out.println();
+
+        System.out.println(manager2.getAllTasks());
+        System.out.println(manager2.getAllSubTask());
+        System.out.println(manager2.getAllEpic());
+
+        System.out.println("Список просмотров во 2 менеджере " + manager2.getHistory());
+        System.out.println("Приоритет задач" + manager2.getPrioritizedTasks());
     }
 }

@@ -10,6 +10,8 @@ import java.util.List;
 
 public interface TaskManager {// сделать интерфейсом перенести все в InMemory
 
+    List<Task> getPrioritizedTasks();
+
     // ПОЛУЧЕНИЕ ВСЕХ ОБЪЕКТОВ
     ArrayList<Task> getAllTasks();
 

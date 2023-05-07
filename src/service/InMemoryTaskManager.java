@@ -5,10 +5,8 @@ import model.SubTask;
 import model.Task;
 import model.Status;
 
-import java.io.IOException;
-import java.security.spec.ECPoint;
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.temporal.TemporalAmount;
 import java.util.*;
 
 public class InMemoryTaskManager implements TaskManager {
@@ -26,37 +24,42 @@ public class InMemoryTaskManager implements TaskManager {
         subTaskStorage = new HashMap<>();
         epicStorage = new HashMap<>();
         inMemoryHistoryManager = Managers.getDefaultHistory();
-        prioritizedTask = new TreeSet<>(Comparator.comparing(Task::getStartTime));//Task original = tasks.get(task.getId)
+        prioritizedTask = new TreeSet<>(
+                Comparator.comparing(Task::getStartTime, Comparator.nullsLast(Comparator.naturalOrder()))
+        );
         // 24 строка - HistoryManager inMemoryHistoryManager = new InMemoryHistoryManager()
     }
 
-    public List<Task> getPrioritizedTasks(){
-        return new ArrayList<>(prioritizedTask);
-    }
-
-    public void calculateStartTime(Epic epic){
-        LocalDateTime startTime = subTaskStorage.get(epic.getAllListSubTaskId().get(0)).getStartTime();
+    protected void calculateTime(Epic epic){
+        LocalDateTime startTime = null;
+        LocalDateTime endTime = null;
+        int duration = 0;
+        if (epic.getAllListSubTaskId().size() == 0) {
+            System.out.println("У данного эпика при расчете времени нет подзадач");
+            return;
+        } else {
+            startTime = subTaskStorage.get(epic.getAllListSubTaskId().get(0)).getStartTime();
+            endTime = subTaskStorage.get(epic.getAllListSubTaskId().get(0)).getStartTime();
+        }
         for(Integer subtaskId : epic.getAllListSubTaskId()) {
             SubTask receivedSub = subTaskStorage.get(subtaskId);
-            if (receivedSub.getStartTime().isBefore(startTime)) {
+            if(receivedSub.getStartTime().isBefore(startTime)){
                 startTime = receivedSub.getStartTime();
             }
-
-        }
-       epic.setStartTime(startTime);
-        epicStorage.put(epic.getId(), epic);
-    }
-    public void calculateEndTime(Epic epic){
-        LocalDateTime endTime = subTaskStorage.get(epic.getAllListSubTaskId().get(0)).getEndTime();
-        for(Integer subtaskId : epic.getAllListSubTaskId()) {
-            SubTask receivedSub = subTaskStorage.get(subtaskId);
             if (receivedSub.getEndTime().isAfter(endTime)) {
                 endTime = receivedSub.getEndTime();
             }
-
+            duration += receivedSub.getDuration();
         }
+        epic.setStartTime(startTime);
         epic.setEndTime(endTime);
+        epic.setDuration(duration);
         epicStorage.put(epic.getId(), epic);
+    }
+
+    @Override
+    public List<Task> getPrioritizedTasks(){
+        return new ArrayList<>(prioritizedTask);
     }
 
     // ПОЛУЧЕНИЕ ВСЕХ ОБЪЕКТОВ
@@ -81,10 +84,12 @@ public class InMemoryTaskManager implements TaskManager {
     public void deleteAllTasks() {
         for (Task task : taskStorage.values()) {
             int id = task.getId();
+            Task taskForDelete = taskStorage.get(id);
+
             inMemoryHistoryManager.remove(id);
+            prioritizedTask.remove(taskForDelete);
         }
         taskStorage.clear();
-        prioritizedTask.clear();
     }
 
     @Override
@@ -101,7 +106,6 @@ public class InMemoryTaskManager implements TaskManager {
         }
         subTaskStorage.clear();
         // при удалении саб тасков нужно отчистить у эпиков сабтаски(так как я буду хранить теперь там айди то айдишники стереть)
-        //TODO: Получить айди всех сабстасков которые удаляются и удалить их из дерева
     }
 
     @Override
@@ -122,7 +126,6 @@ public class InMemoryTaskManager implements TaskManager {
         }
         epicStorage.clear();
         subTaskStorage.clear();// при удалении эпика будут стираться все SubTask без эпика нет SubTask
-        //TODO: Получить айди всех епиков и их сабтасков которые удаляются и удалить их из дерева
     }
 
     // ПОЛУЧЕНИЕ ОБЪЕКТОВ ПО ID
@@ -154,7 +157,16 @@ public class InMemoryTaskManager implements TaskManager {
         newTask.setId(id);
         taskStorage.put(id, newTask);
         id++;
-        prioritizedTask.add(newTask);
+        for (Task task: getPrioritizedTasks()){
+            if (newTask.getStartTime().isAfter(task.getStartTime()) && newTask.getEndTime().isBefore(task.getEndTime())
+            || newTask.getStartTime().isEqual(task.getStartTime()) && newTask.getEndTime().isEqual(task.getEndTime())
+            || newTask.getStartTime().isEqual(task.getStartTime())) {
+                System.out.println("Задача не добавлена так как найдено пересечение по времени");
+            } else {
+                prioritizedTask.add(newTask);
+            }
+        }
+        //При создании задач и подзадачи нужно сделать проверку на пересечение по времени
         return id - 1;
     }
 
@@ -167,10 +179,18 @@ public class InMemoryTaskManager implements TaskManager {
             epicName.addListSubTaskId(newSubTask.getId());
             subTaskStorage.put(id, newSubTask);
             updateStatusInEpic(epicName);
-            calculateStartTime(epicName);
-            calculateEndTime(epicName);
+            calculateTime(epicName);
             id++;
-            prioritizedTask.add(newSubTask);
+            for (Task task : getPrioritizedTasks()) {
+                if (newSubTask.getStartTime().isAfter(task.getStartTime()) && newSubTask.getEndTime().isBefore(task.getEndTime())
+                || newSubTask.getStartTime().isEqual(task.getStartTime()) && newSubTask.getEndTime().isEqual(task.getEndTime())
+                || newSubTask.getStartTime().isEqual(task.getStartTime())) {
+                    System.out.println("Подзадача не добавлена так как найдено пересечение по времени");
+                } else {
+                    prioritizedTask.add(newSubTask);
+                }
+            }
+            //При создании задач и подзадачи нужно сделать проверку на пересечение по времени
         } else {
             System.out.println("Подзадача не может существовать без эпика");
         }
@@ -182,11 +202,6 @@ public class InMemoryTaskManager implements TaskManager {
         newEpic.setId(id);
         epicStorage.put(id, newEpic);
         id++;
-        if(newEpic.getAllListSubTaskId().size() != 0) {
-            calculateStartTime(newEpic);
-            calculateEndTime(newEpic);
-        }
-        prioritizedTask.add(newEpic);
         return id - 1;
     }
 
@@ -196,9 +211,17 @@ public class InMemoryTaskManager implements TaskManager {
     public void updateTask(Task task) {
         taskStorage.put(task.getId(), task);
 
-        prioritizedTask.remove(taskStorage.get(task.getId()));
-        prioritizedTask.add(task);
-        //TODO: Удалить таску из дерева по айди и потом добавить новую
+        for (Task countTask : getPrioritizedTasks()) {
+            if (task.getStartTime().isAfter(countTask.getStartTime()) && task.getEndTime().isBefore(countTask.getEndTime())
+            || task.getStartTime().isEqual(countTask.getStartTime()) && task.getEndTime().isEqual(countTask.getEndTime())
+            || task.getStartTime().isEqual(countTask.getStartTime())) {
+                System.out.println("Задача не добавлена так как найдено пересечение по времени");
+            } else {
+                prioritizedTask.remove(taskStorage.get(task.getId()));
+                prioritizedTask.add(task);
+            }
+        }
+        // Удаляю таску из дерева по айди и потом добавляю новую
     }
 
     @Override
@@ -207,12 +230,19 @@ public class InMemoryTaskManager implements TaskManager {
             subTaskStorage.put(subTask.getId(), subTask);
             Epic newEpic = epicStorage.get(subTask.getIdEpic()); //достал епик указанный в SubTask
             updateStatusInEpic(newEpic); //сделал расчет статуса
-            calculateStartTime(newEpic);
-            calculateEndTime(newEpic);
+            calculateTime(newEpic);
 
-            prioritizedTask.remove(subTaskStorage.get(subTask.getId()));
-            prioritizedTask.add(subTask);
-            //TODO: Удалить сабтаску из дерева по айди и потом добавить новую
+            for (Task task : getPrioritizedTasks()) {
+                if (subTask.getStartTime().isAfter(task.getStartTime()) && subTask.getEndTime().isBefore(task.getEndTime())
+                   || subTask.getStartTime().isEqual(task.getStartTime()) && subTask.getEndTime().isEqual(task.getEndTime())
+                   || subTask.getStartTime().isEqual(task.getStartTime())) {
+                    System.out.println("Подзадача не добавлена так как найдено пересечение по времени");
+                } else {
+                    prioritizedTask.remove(subTaskStorage.get(subTask.getId()));
+                    prioritizedTask.add(subTask);
+                }
+            }
+            //Удаляю сабтаску из дерева по айди и потом добавить новую
         } else {
             System.out.println("Данного id для subTask не существует");
         }
@@ -227,7 +257,7 @@ public class InMemoryTaskManager implements TaskManager {
 
         prioritizedTask.remove(epicStorage.get(epic.getId()));
         prioritizedTask.add(epic);
-        //TODO: Удалить epic из дерева по айди и потом добавить новую
+        // нужно удалить epic из дерева по айди и потом добавить новый
     }
 
     //УДАЛЕНИЕ ПО ID
@@ -240,7 +270,6 @@ public class InMemoryTaskManager implements TaskManager {
         if (taskForDelete!=null) {
             prioritizedTask.remove(taskForDelete);
         }
-        //TODO: Получить таску по айди из taskStorage, и вызвать prioritizedTask.remove(task)
     }
 
     @Override
@@ -250,15 +279,13 @@ public class InMemoryTaskManager implements TaskManager {
         updateStatusInEpic(epicStorage.get(idCountEpic));
         subTaskStorage.remove(id);
         inMemoryHistoryManager.remove(id);
-        calculateStartTime(epicStorage.get(idCountEpic));
-        calculateEndTime(epicStorage.get(idCountEpic));
+        calculateTime(epicStorage.get(idCountEpic));
         // после удаления саб таски, ее нужно удалить из определенного эпика
 
         SubTask subTaskForDelete = subTaskStorage.get(id);
         if (subTaskForDelete!=null) {
             prioritizedTask.remove(subTaskForDelete);
         }
-        //TODO: Получить сабтаску по айди из SubTaskStorage, и вызвать prioritizedTask.remove(subTask)
     }
 
     @Override
@@ -270,7 +297,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (epicForDelete!=null) {
             prioritizedTask.remove(epicForDelete);
         }
-        //TODO: Получить epic и все его сабтаски по айди , и вызвать prioritizedTask.remove(epic) и prioritizedTask.remove(subtask) для каждого из сабтасков этого эпика
+        //Получить epic и все его сабтаски по айди
         for (Integer i : listSubTaskId) {
             subTaskStorage.remove(i);
             inMemoryHistoryManager.remove(i);

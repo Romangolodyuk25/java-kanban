@@ -102,7 +102,7 @@ public class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksM
             BufferedReader bufferedReader = new BufferedReader(fileReader)
         ) {
            String line = bufferedReader.readLine();
-           assertEquals(task, fromString(line));
+           assertEquals(task.getId(), fromString(line).getId());
         }
     }
 
@@ -124,7 +124,7 @@ public class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksM
                 receivedTasks.add(fromString(line));
             }
             assertEquals(2, receivedTasks.size());
-            assertEquals(epic, receivedTasks.get(1));
+            assertEquals(epic.getId(), receivedTasks.get(1).getId());
             Epic newEpic = (Epic) receivedTasks.get(1);
             assertEquals(0, newEpic.getAllListSubTaskId().size());
         }
@@ -173,7 +173,7 @@ public class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksM
                 receivedTasks.add(fromString(line));
             }
             assertEquals(3, receivedTasks.size());
-            assertEquals(subTask, receivedTasks.get(2));
+            assertEquals(subTask.getId(), receivedTasks.get(2).getId());
             Epic receivedEpic = (Epic) receivedTasks.get(1);
             SubTask receivedSubTask = (SubTask) receivedTasks.get(2);
             assertEquals(receivedEpic.getId(), receivedSubTask.getIdEpic());

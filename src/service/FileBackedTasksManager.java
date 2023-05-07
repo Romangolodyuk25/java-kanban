@@ -97,7 +97,6 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
     private String createFirstString() {
         return "id,type,name,status,description,epic,start_time,duration,end_time" + "\n";
-        // TODO: Добавить поля start_time,duration,end_time, поменять методы парсинга(endTime может быть только у эпика)
     }
 
     private String toString(Task task) {// метод который должен сохранить задачу в строку
@@ -144,6 +143,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             newTask = new SubTask(nameTask, descriptionName, statusTask,idTask, Integer.parseInt(epicId), startTime, duration);
         } else if (typeTask.equals(TaskType.EPIC)) {
             newTask = new Epic(nameTask, descriptionName, statusTask, idTask);
+            calculateTime((Epic)newTask);
         }
         return newTask;
     }
