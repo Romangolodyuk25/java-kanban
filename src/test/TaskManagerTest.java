@@ -333,4 +333,145 @@ abstract class TaskManagerTest<T extends TaskManager> {
         assertEquals(task1, receivedTask, "Это разные задачи");
     }
 
+    @Test
+    public void shouldAddSubTaskInEpicAndCheckEpicTime(){
+        Epic epic = createEpic();
+        SubTask subTask1 = createSubTask();
+        SubTask subTask2 = new SubTask("Съездить на вокзала за билетами", "Купить билеты на 15 число", Status.IN_PROGRESS,0, 1, LocalDateTime.of(2023, 2, 1, 18, 0),60);
+        int idEpic = getTaskManager().createEpic(epic);
+        int idSubTask1 = getTaskManager().createSubTask(subTask1);
+        int idSubTask2 = getTaskManager().createSubTask(subTask2);
+
+        ArrayList<SubTask> listId = getTaskManager().getSubTaskInSpecificEpic(idEpic);
+        assertNotNull(listId, "Список сабтасков пустой");
+        assertEquals(2, listId.size(), "Размер Сабтасков не совпадает");
+        assertEquals(subTask1.getId(), listId.get(0).getId(), "Идентификатор задачи не совпадает");
+        assertEquals(subTask1.getIdEpic(), listId.get(0).getIdEpic(), "Идентификатор Epic в подзадаче не совпадает");
+
+        Epic receivedEpic = getTaskManager().getEpicById(idEpic);
+        assertEquals(receivedEpic.getStartTime(), LocalDateTime.of(2023, 1, 1, 15, 0));
+        assertEquals(receivedEpic.getEndTime(), LocalDateTime.of(2023, 2, 1, 19, 0));
+    }
+    @Test
+    public void shouldCheckEpicTimeIfEpicNotHaveSubTask(){
+        Epic epic = new Epic("Мы переезжаем", "Много задач по переезду", Status.NEW,1, null);
+        int idEpic = getTaskManager().createEpic(epic);
+        assertEquals(1, getTaskManager().getAllEpic().size());
+        Epic receivedEpic = getTaskManager().getEpicById(idEpic);
+        assertEquals(0, receivedEpic.getAllListSubTaskId().size());
+        assertEquals(null, receivedEpic.getStartTime());
+        assertNull(receivedEpic.getEndTime());
+    }
+
+    @Test
+    public void shouldCheckEpicTimeForUpdateSubTask(){
+        Epic epic = createEpic();
+        SubTask subTask1 = createSubTask();
+        subTask1.setStartTime(LocalDateTime.of(2023, 2, 1, 15, 10));
+        subTask1.setDuration(120);
+
+        int idEpic = getTaskManager().createEpic(epic);
+        int idSubTask1 = getTaskManager().createSubTask(subTask1);
+
+        Epic receivedEpic = getTaskManager().getEpicById(idEpic);
+
+        assertEquals(idEpic, getTaskManager().getSubTaskById(idSubTask1).getIdEpic());
+        assertEquals(subTask1.getStartTime(), receivedEpic.getStartTime());
+        assertEquals(LocalDateTime.of(2023, 2, 1, 17, 10), receivedEpic.getEndTime());
+
+        SubTask updateSubtask = new SubTask("Поужинать", "Купить продукты", Status.IN_PROGRESS,2, 1, LocalDateTime.of(2023, 2, 1, 22, 0),60);
+        getTaskManager().updateSubTask(updateSubtask);
+
+        receivedEpic = getTaskManager().getEpicById(idEpic);
+        assertEquals(idEpic, getTaskManager().getSubTaskById(idSubTask1).getIdEpic());
+        assertEquals(updateSubtask.getStartTime(), receivedEpic.getStartTime());
+        assertEquals(LocalDateTime.of(2023, 2, 1, 23, 0), receivedEpic.getEndTime());
+    }
+
+    @Test
+    public void shouldNotAddIfTaskIntersect(){
+        Task task = new Task("Переезд", "Я буду переезжать", Status.NEW, 1, LocalDateTime.of(2023, 1, 1, 10, 0), 100);
+        SubTask subTask = new SubTask("Собрать вещи", "Разложить вещи в чемодан", Status.NEW,1, 2, LocalDateTime.of(2023, 1, 1, 10, 0),60);
+        Epic epic = new Epic("Мы переезжаем", "Много задач по переезду", Status.NEW,1, LocalDateTime.of(2023, 1, 1, 12, 0));
+
+        int idTask = getTaskManager().createTask(task);
+        Task receivedTask = getTaskManager().getTaskById(idTask);
+        assertEquals(1, getTaskManager().getAllTasks().size());
+        assertEquals(task.getStartTime(), receivedTask.getStartTime());
+        assertEquals(1, getTaskManager().getPrioritizedTasks().size());
+
+        getTaskManager().createEpic(epic);
+        int idSubTask = getTaskManager().createSubTask(subTask);
+        SubTask receivedSubTask = getTaskManager().getSubTaskById(idSubTask);
+        assertEquals(0, getTaskManager().getAllSubTask().size());
+        assertEquals(1, getTaskManager().getPrioritizedTasks().size());
+    }
+
+    @Test
+    public void shouldAddIfTaskNotIntersect(){
+        Task task = new Task("Переезд", "Я буду переезжать", Status.NEW, 1, LocalDateTime.of(2023, 1, 1, 10, 0), 100);
+        SubTask subTask = new SubTask("Собрать вещи", "Разложить вещи в чемодан", Status.NEW,1, 2, LocalDateTime.of(2023, 1, 1, 15, 0),60);
+        Epic epic = new Epic("Мы переезжаем", "Много задач по переезду", Status.NEW,1, LocalDateTime.of(2023, 1, 1, 12, 0));
+
+        int idTask = getTaskManager().createTask(task);
+        Task receivedTask = getTaskManager().getTaskById(idTask);
+        assertEquals(1, getTaskManager().getAllTasks().size());
+        assertEquals(task.getStartTime(), receivedTask.getStartTime());
+        assertEquals(1, getTaskManager().getPrioritizedTasks().size());
+
+        getTaskManager().createEpic(epic);
+        int idSubTask = getTaskManager().createSubTask(subTask);
+        SubTask receivedSubTask = getTaskManager().getSubTaskById(idSubTask);
+        assertEquals(1, getTaskManager().getAllSubTask().size());
+        assertEquals(2, getTaskManager().getPrioritizedTasks().size());
+    }
+
+    @Test
+    public void shouldNotUpdateIfTimeIntersect(){
+        Task task = new Task("Переезд", "Я буду переезжать", Status.NEW, 1, LocalDateTime.of(2023, 1, 1, 10, 0), 100);
+        SubTask subTask = new SubTask("Собрать вещи", "Разложить вещи в чемодан", Status.NEW,1, 2, LocalDateTime.of(2023, 1, 1, 15, 0),60);
+        Epic epic = new Epic("Мы переезжаем", "Много задач по переезду", Status.NEW,1, LocalDateTime.of(2023, 1, 1, 12, 0));
+
+        int idTask = getTaskManager().createTask(task);
+        Task receivedTask = getTaskManager().getTaskById(idTask);
+        assertEquals(1, getTaskManager().getAllTasks().size());
+        assertEquals(task.getStartTime(), receivedTask.getStartTime());
+        assertEquals(1, getTaskManager().getPrioritizedTasks().size());
+
+        getTaskManager().createEpic(epic);
+        int idSubTask = getTaskManager().createSubTask(subTask);
+
+        SubTask newSubTask = new SubTask("Сесть поужинать", "Купить продукты", Status.NEW,3, 2, LocalDateTime.of(2023, 1, 1, 10, 0),60);
+        getTaskManager().updateSubTask(newSubTask);
+
+        assertEquals(subTask, getTaskManager().getSubTaskById(idSubTask));
+        assertEquals(2, getTaskManager().getPrioritizedTasks().size());
+        assertEquals(subTask, getTaskManager().getPrioritizedTasks().get(1));
+
+    }
+
+    @Test
+    public void shouldUpdateIfTimeIntersect(){
+        Task task = new Task("Переезд", "Я буду переезжать", Status.NEW, 1, LocalDateTime.of(2023, 1, 1, 10, 0), 100);
+        SubTask subTask = new SubTask("Собрать вещи", "Разложить вещи в чемодан", Status.NEW,1, 2, LocalDateTime.of(2023, 1, 1, 15, 0),60);
+        Epic epic = new Epic("Мы переезжаем", "Много задач по переезду", Status.NEW,1, LocalDateTime.of(2023, 1, 1, 12, 0));
+
+        int idTask = getTaskManager().createTask(task);
+        Task receivedTask = getTaskManager().getTaskById(idTask);
+        assertEquals(1, getTaskManager().getAllTasks().size());
+        assertEquals(task.getStartTime(), receivedTask.getStartTime());
+        assertEquals(1, getTaskManager().getPrioritizedTasks().size());
+
+        getTaskManager().createEpic(epic);
+        int idSubTask = getTaskManager().createSubTask(subTask);
+        SubTask receivedSubTask = getTaskManager().getSubTaskById(idSubTask);
+
+        SubTask newSubTask = new SubTask("Сесть поужинать", "Купить продукты", Status.NEW,3, 2, LocalDateTime.of(2023, 1, 1, 15, 0),60);
+        getTaskManager().updateSubTask(newSubTask);
+
+        assertNotNull(getTaskManager().getSubTaskById(newSubTask.getId()));
+        assertEquals(newSubTask, getTaskManager().getSubTaskById(idSubTask));
+        assertEquals(2, getTaskManager().getPrioritizedTasks().size());
+        assertEquals(newSubTask, getTaskManager().getPrioritizedTasks().get(1));
+    }
 }
