@@ -219,8 +219,8 @@ public class InMemoryTaskManager implements TaskManager {
     public void updateTask(Task task) {
         boolean intersect = addAndCheckIntersection(task);
         if(!intersect) {
-            taskStorage.put(task.getId(), task);
             prioritizedTask.remove(taskStorage.get(task.getId()));
+            taskStorage.put(task.getId(), task);
             prioritizedTask.add(task);
         } else {
             System.out.println("Задаче не может быть обновлена из-за пересечения по времени");
