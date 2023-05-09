@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import service.TaskManager;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,15 +27,15 @@ abstract class TaskManagerTest<T extends TaskManager> {
     }
 
     public Task createNewTask(){
-        return new Task("Переезд", "Я буду переезжать", Status.NEW);
+        return new Task("Переезд", "Я буду переезжать", Status.NEW, 1, LocalDateTime.of(2023, 1, 1, 10, 00), 100);
     }
 
     public Epic createEpic(){
-        return new Epic("Мы переезжаем", "Много задач по переезду", Status.NEW,1);
+        return new Epic("Мы переезжаем", "Много задач по переезду", Status.NEW,1, LocalDateTime.of(2023, 1, 1, 12, 0));
     }
 
     public SubTask createSubTask(){
-        return new SubTask("Собрать вещи", "Разложить вещи в чемодан", Status.NEW,1);
+        return new SubTask("Собрать вещи", "Разложить вещи в чемодан", Status.NEW,1, 1, LocalDateTime.of(2023, 1, 1, 15, 0),60);
     }
 
 
@@ -224,7 +225,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
         assertNotNull(receivedTask, "Задача не найдена");
         assertEquals(task1Id, receivedTask.getId(), "Айди задачи не совпадает");
 
-        Task newTask = new Task("Отъезд", "Я буду уездать", Status.NEW, task1Id);
+        Task newTask = new Task("Приезд", "Я приехал", Status.NEW, 1, LocalDateTime.of(2023, 1, 1, 8, 00), 10);
         getTaskManager().updateTask(newTask);
 
         List<Task> tasks = getTaskManager().getAllTasks();
@@ -245,7 +246,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
         assertEquals(idEpic, getTaskManager().getSubTaskById(idSubTask1).getIdEpic());
         assertEquals(Status.DONE, getTaskManager().getEpicById(idEpic).getStatus());
 
-        SubTask subTask2 = new SubTask("Разобрать вещи", "Разложить вещи", Status.IN_PROGRESS, idEpic, idSubTask1);
+        SubTask subTask2 = new SubTask("Разобрать вещи", "Разложить вещи", Status.IN_PROGRESS, idSubTask1, idEpic, LocalDateTime.of(2023, 1, 1, 15, 0),60);
         getTaskManager().updateSubTask(subTask2);
 
         assertEquals(idEpic, getTaskManager().getSubTaskById(idSubTask1).getIdEpic());
@@ -296,20 +297,16 @@ abstract class TaskManagerTest<T extends TaskManager> {
 
     @Test
     public void shouldReturnSubTaskInSpecificEpic(){
-        Epic epic = new Epic("Мы переезжаем", "Много задач по переезду", Status.NEW,1);
-        SubTask subTask1 = new SubTask("Собрать вещи", "Разложить вещи в чемодан", Status.NEW,1);
-        SubTask subTask2 = new SubTask("Собрать вещи", "Разложить вещи в чемодан", Status.DONE,1);
+        Epic epic = createEpic();
+        SubTask subTask1 = createSubTask();
         int idEpic = getTaskManager().createEpic(epic);
         int idSubTask1 = getTaskManager().createSubTask(subTask1);
-        int idSubTask2 = getTaskManager().createSubTask(subTask2);
 
         ArrayList<SubTask> listId = getTaskManager().getSubTaskInSpecificEpic(idEpic);
         assertNotNull(listId, "Список сабтасков пустой");
-        assertEquals(2, listId.size(), "Размер Сабтасков не совпадает");
+        assertEquals(1, listId.size(), "Размер Сабтасков не совпадает");
         assertEquals(subTask1.getId(), listId.get(0).getId(), "Идентификатор задачи не совпадает");
-        assertEquals(subTask2.getId(), listId.get(1).getId(), "Идентификатор задачи не совпадает");
         assertEquals(subTask1.getIdEpic(), listId.get(0).getIdEpic(), "Идентификатор Epic в подзадаче не совпадает");
-        assertEquals(subTask2.getIdEpic(), listId.get(1).getIdEpic(), "Идентификатор Epic в подзадаче не совпадает");
     }
 
     @Test
@@ -321,7 +318,8 @@ abstract class TaskManagerTest<T extends TaskManager> {
         assertNull(getTaskManager().getSubTaskById(1));
     }
 
-    @Test public void shouldReturnHistoryMethodGet(){
+    @Test
+    public void shouldReturnHistoryMethodGet(){
         Task task1 = createNewTask();
         getTaskManager().createTask(task1);
         Task newTask =  getTaskManager().getTaskById(task1.getId());

@@ -13,6 +13,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,17 +30,14 @@ public class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksM
     }
 
     public Task createNewTask(){
-        return new Task("Переезд", "Я буду переезжать", Status.NEW,1);
+        return new Task("Переезд", "Я буду переезжать", Status.NEW, 1, LocalDateTime.of(2023, 1, 1, 10, 00), 100);
     }
-
     public Epic createEpic(){
-        return new Epic("Мы переезжаем", "Много задач по переезду", Status.NEW,1);
+        return new Epic("Мы переезжаем", "Много задач по переезду", Status.NEW,1, LocalDateTime.of(2023, 1, 1, 12, 0));
     }
-
     public SubTask createSubTask(){
-        return new SubTask("Собрать вещи", "Разложить вещи в чемодан", Status.NEW,1, 1);
+        return new SubTask("Собрать вещи", "Разложить вещи в чемодан", Status.NEW,1, 1, LocalDateTime.of(2023, 1, 1, 15, 0),60);
     }
-
     private String toString(Task task) {// метод который должен сохранить задачу в строку
         String epicId = "";
         if (task.getType() == TaskType.SUBTASK) {
@@ -207,5 +205,45 @@ public class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksM
         }
     }
 
-    
+    @Test
+    public void shouldLoadFromFile(){
+        TaskManager manager1 = getTaskManager();
+        Task task = new Task("Переезд", "Я буду переезжать", Status.NEW, 0, LocalDateTime.of(2023, 1, 1, 10, 00), 100);
+        Epic epic1 = new Epic("Мы переезжаем", "Много задач по переезду", Status.NEW, 0, LocalDateTime.of(2023, 1, 1, 12, 0));
+        SubTask subTask1 = new SubTask("Собрать вещи", "Разложить вещи в чемодан", Status.IN_PROGRESS,0, 2, LocalDateTime.of(2023, 1, 1, 15, 0),60);
+        SubTask subTask2 = new SubTask("Съездить на вокзала за билетами", "Купить билеты на 15 число", Status.IN_PROGRESS,0, 2, LocalDateTime.of(2023, 2, 1, 18, 0),60);
+
+        assertEquals(0, manager1.getPrioritizedTasks().size());
+        int idTask = manager1.createTask(task);
+        int idEpic1 = manager1.createEpic(epic1);
+        int idSubTask1 = manager1.createSubTask(subTask1);
+        int idSubTask2 = manager1.createSubTask(subTask2);
+
+         Task receivedTask1 = manager1.getTaskById(idTask);
+        SubTask receivedSubTask1 = manager1.getSubTaskById(idSubTask1);
+        SubTask receivedSubTask2 = manager1.getSubTaskById(idSubTask2);
+        Epic receivedEpic = manager1.getEpicById(idEpic1);
+        assertEquals(task, receivedTask1);
+        assertEquals(epic1, receivedEpic);
+
+        assertEquals(4, manager1.getHistory().size());
+
+        assertEquals(3, manager1.getPrioritizedTasks().size());
+        assertEquals(manager1.getPrioritizedTasks().get(0), task);
+
+        TaskManager manager2 = FileBackedTasksManager.loadFromFile(Paths.get("testFile.csv").toFile());
+
+        assertEquals(1,manager2.getAllTasks().size());
+        assertEquals(100, manager2.getTaskById(idTask).getDuration());
+
+        assertEquals(2,manager2.getAllSubTask().size());
+
+        assertEquals(epic1, manager2.getAllEpic().get(0));
+        assertEquals(LocalDateTime.of(2023,2,1,19,0), manager2.getEpicById(idEpic1).getEndTime());
+        assertEquals(LocalDateTime.of(2023,1,1,15,0), manager2.getEpicById(idEpic1).getStartTime());
+
+        assertEquals(3, manager2.getPrioritizedTasks().size());
+        assertEquals(4, manager2.getHistory().size());
+    }
+
 }

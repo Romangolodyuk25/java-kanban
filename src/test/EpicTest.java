@@ -6,6 +6,8 @@ import model.SubTask;
 import org.junit.jupiter.api.Test;
 import service.InMemoryTaskManager;
 
+import java.time.LocalDateTime;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class EpicTest {
@@ -13,19 +15,19 @@ class EpicTest {
     InMemoryTaskManager inMemoryTaskManager = new InMemoryTaskManager();
 
     public Epic createEpic(){
-        return new Epic("Мы переезжаем", "Много задач по переезду", Status.NEW,1);
+        return new Epic("Мы переезжаем", "Много задач по переезду", Status.NEW,1, LocalDateTime.of(2023, 1, 1, 12, 0));
     }
 
     public SubTask createSubTaskStatusNew(){
-        return new SubTask("Собрать вещи", "Разложить вещи в чемодан", Status.NEW,1);
+        return new SubTask("Собрать вещи", "Разложить вещи в чемодан", Status.NEW,1, 1, LocalDateTime.of(2023, 1, 1, 15, 0),60);
     }
 
     public SubTask createSubTaskStatusDone(){
-        return new SubTask("Собрать вещи", "Разложить вещи в чемодан", Status.DONE,1);
+        return new SubTask("Собрать вещи", "Разложить вещи в чемодан", Status.DONE,1, 1, LocalDateTime.of(2023, 1, 1, 17, 0),60);
     }
 
     public SubTask createSubTaskStatusInProgress(){
-        return new SubTask("Собрать вещи", "Разложить вещи в чемодан", Status.IN_PROGRESS,1);
+        return new SubTask("Собрать вещи", "Разложить вещи в чемодан", Status.IN_PROGRESS,1, 1, LocalDateTime.of(2023, 1, 1, 12, 0),60);
     }
 
     @Test
