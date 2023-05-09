@@ -451,7 +451,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    public void shouldUpdateIfTimeIntersect(){
+    public void shouldUpdateIfTimeNotIntersect(){
         Task task = new Task("Переезд", "Я буду переезжать", Status.NEW, 1, LocalDateTime.of(2023, 1, 1, 10, 0), 100);
         SubTask subTask = new SubTask("Собрать вещи", "Разложить вещи в чемодан", Status.NEW,1, 2, LocalDateTime.of(2023, 1, 1, 15, 0),60);
         Epic epic = new Epic("Мы переезжаем", "Много задач по переезду", Status.NEW,1, LocalDateTime.of(2023, 1, 1, 12, 0));
@@ -464,14 +464,21 @@ abstract class TaskManagerTest<T extends TaskManager> {
 
         getTaskManager().createEpic(epic);
         int idSubTask = getTaskManager().createSubTask(subTask);
+        assertEquals(LocalDateTime.of(2023, 1, 1, 15, 0), epic.getStartTime());
+        assertEquals(LocalDateTime.of(2023, 1, 1, 16, 0), epic.getEndTime());
         SubTask receivedSubTask = getTaskManager().getSubTaskById(idSubTask);
 
-        SubTask newSubTask = new SubTask("Сесть поужинать", "Купить продукты", Status.NEW,3, 2, LocalDateTime.of(2023, 1, 1, 15, 0),60);
+        SubTask newSubTask = new SubTask("Сесть поужинать", "Купить продукты", Status.NEW,3, 2, LocalDateTime.of(2023, 1, 1, 20, 0),60);
         getTaskManager().updateSubTask(newSubTask);
 
+        assertEquals(LocalDateTime.of(2023, 1, 1, 20, 0), epic.getStartTime());
+        assertEquals(LocalDateTime.of(2023, 1, 1, 21, 0), epic.getEndTime());
         assertNotNull(getTaskManager().getSubTaskById(newSubTask.getId()));
         assertEquals(newSubTask, getTaskManager().getSubTaskById(idSubTask));
         assertEquals(2, getTaskManager().getPrioritizedTasks().size());
         assertEquals(newSubTask, getTaskManager().getPrioritizedTasks().get(1));
+        assertEquals(LocalDateTime.of(2023, 1, 1, 20, 0), newSubTask.getStartTime());
+        assertEquals(LocalDateTime.of(2023, 1, 1, 21, 0), newSubTask.getEndTime());
+
     }
 }

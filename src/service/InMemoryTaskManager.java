@@ -233,12 +233,12 @@ public class InMemoryTaskManager implements TaskManager {
         if (subTaskStorage.containsKey(subTask.getId()) && epicStorage.containsKey(subTask.getIdEpic())) {//проверил айди в SubTask и айди Epic
             boolean intersect = addAndCheckIntersection(subTask);
             if (!intersect) {
+                prioritizedTask.remove(subTaskStorage.get(subTask.getId()));
                 subTaskStorage.put(subTask.getId(), subTask);
                 Epic newEpic = epicStorage.get(subTask.getIdEpic()); //достал епик указанный в SubTask
                 updateStatusInEpic(newEpic); //сделал расчет статуса
                 calculateTime(newEpic);
 
-                prioritizedTask.remove(subTaskStorage.get(subTask.getId()));
                 prioritizedTask.add(subTask);
             }
            // add(subTask);
