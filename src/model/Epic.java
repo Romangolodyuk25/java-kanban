@@ -19,6 +19,11 @@ public class Epic extends Task {
     public Epic(String nameTask, String description, Status status, int id, LocalDateTime startTime, int duration){
         super(nameTask, description, status, id, startTime, duration);
     }
+    public Epic(String nameTask, String description, Status status, int id, LocalDateTime endTime){
+        super(nameTask, description, status, id);
+        this.endTime = endTime;
+    }
+
 
     @Override
     public TaskType getType(){
@@ -72,6 +77,9 @@ public class Epic extends Task {
                 ", Status=" + getStatus() +
                 ", id=" + getId() +
                 ", subTaskListId=" + subTaskListId +
+                ", startTime='" + getStartTime() + '\'' +
+                ", duration='" + getDuration() + '\'' +
+                ", endTime='" + getEndTime() + '\'' +
                 '}';
     }
 }

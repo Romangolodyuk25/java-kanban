@@ -7,18 +7,19 @@ import service.Managers;
 import service.TaskManager;
 
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 
 
 public class Main {
     public static void main(String[] args){
         TaskManager manager = Managers.getDefaultFileBackedTasksManager();
 
-        Task task = new Task("Переезд", "Я буду переезжать", Status.NEW);
-        Epic epic1 = new Epic("Мы переезжаем", "Много задач по переезду", Status.NEW);
-        SubTask subTask1 = new SubTask("Собрать вещи", "Разложить вещи в чемодан", Status.IN_PROGRESS,2);
-        SubTask subTask2 = new SubTask("Съездить на вокзала за билетами", "Купить билеты на 15 число", Status.IN_PROGRESS,2);
-        SubTask subTask3 = new SubTask("Подсидеть на дорожку", "Присесть на чемодан", Status.IN_PROGRESS,2);
-        Epic epic2 = new Epic("Отпраздновать приезд", "Жестка набухаться до рыготины", Status.NEW);
+        Task task = new Task("Переезд", "Я буду переезжать", Status.NEW, 0, LocalDateTime.of(2023, 1, 1, 10, 00), 100);
+        Epic epic1 = new Epic("Мы переезжаем", "Много задач по переезду", Status.NEW, 0, LocalDateTime.of(2023, 1, 1, 12, 0));
+        SubTask subTask1 = new SubTask("Собрать вещи", "Разложить вещи в чемодан", Status.IN_PROGRESS,0, 2, LocalDateTime.of(2023, 1, 1, 15, 0),60);
+        SubTask subTask2 = new SubTask("Съездить на вокзала за билетами", "Купить билеты на 15 число", Status.IN_PROGRESS,0, 2, LocalDateTime.of(2023, 2, 1, 18, 0),60);
+        SubTask subTask3 = new SubTask("Подсидеть на дорожку", "Присесть на чемодан", Status.IN_PROGRESS,0, 2, LocalDateTime.of(2023, 3, 1, 20, 0),100);
+        Epic epic2 = new Epic("Отпраздновать приезд", "Жестка набухаться до рыготины", Status.NEW,0, LocalDateTime.of(2023, 4, 2, 12, 0), 50);
 
 
         int idTask = manager.createTask(task);

@@ -54,6 +54,8 @@ public class SubTask extends Task {
                 ", Descriptor=" + getDescription() +
                 ", id=" + getId() +
                 ", Status=" + getStatus() +
+                ", startTime='" + getStartTime() + '\'' +
+                ", duration='" + getDuration() + '\'' +
                 '}';
     }
 }

@@ -3,6 +3,7 @@ package service;
 import model.*;
 
 import java.io.*;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -63,11 +64,14 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                         SubTask newSubTask = (SubTask) newTask;
                         manager.subTaskStorage.put(newSubTask.getId(), newSubTask);
                         manager.epicStorage.get(newSubTask.getIdEpic()).addListSubTaskId(newTask.getId());
+                        manager.calculateTime(manager.getEpicById(newSubTask.getIdEpic()));
+                        manager.prioritizedTask.add(newSubTask);
                     } else if (newTask.getType() == TaskType.EPIC) {
                         Epic newEpic = (Epic) newTask;
                         manager.epicStorage.put(newEpic.getId(), newEpic);
                     } else {
                         manager.taskStorage.put(newTask.getId(), newTask);
+                        manager.prioritizedTask.add(newTask);
                     }
                 }
                 } else {
@@ -110,9 +114,10 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             endTime = epic.getEndTime();
         }
         String endTimeStr = endTime == null ? "" : dateTimeFormatter.format(endTime);
+        String startTimeStr = task.getStartTime() == null ? "" : dateTimeFormatter.format(task.getStartTime());
         return task.getId() + "," + task.getType() + "," + task.getName() + "," +
                 task.getStatus() + "," + task.getDescription() + "," + epicId + ","
-                + dateTimeFormatter.format(task.getStartTime()) + ","
+                + startTimeStr + ","
                 + task.getDuration() + "," + endTimeStr + "\n";
     }
 
@@ -127,23 +132,19 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         String epicId = "";
         LocalDateTime startTime = null;
         int duration = 0;
-        LocalDateTime endTime = null;
         if (typeTask.equals(TaskType.SUBTASK)){
             epicId = stringArr[5];
         }
         startTime = LocalDateTime.parse(stringArr[6],dateTimeFormatter);
         duration = Integer.parseInt(stringArr[7]);
-        if (!epicId.isEmpty()){
-            endTime = LocalDateTime.parse(stringArr[8],dateTimeFormatter);
-        }
 
         if (typeTask.equals(TaskType.TASK)) {
             newTask = new Task(nameTask, descriptionName, statusTask, idTask, startTime, duration);
         } else if (typeTask.equals(TaskType.SUBTASK)) {
             newTask = new SubTask(nameTask, descriptionName, statusTask,idTask, Integer.parseInt(epicId), startTime, duration);
+
         } else if (typeTask.equals(TaskType.EPIC)) {
             newTask = new Epic(nameTask, descriptionName, statusTask, idTask);
-            calculateTime((Epic)newTask);
         }
         return newTask;
     }

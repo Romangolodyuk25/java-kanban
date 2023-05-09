@@ -24,7 +24,7 @@ public class Task {
     }
 
     public Task(){
-        this.startTime = LocalDateTime.now();
+        this.startTime = null;
         this.duration = 0;
     }
 
@@ -120,6 +120,8 @@ public class Task {
                 ", description='" + description + '\'' +
                 ", id=" + id +
                 ", status='" + status + '\'' +
+                ", startTime='" + startTime + '\'' +
+                ", duration='" + duration + '\'' +
                 '}';
     }
 }
