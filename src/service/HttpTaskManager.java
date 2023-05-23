@@ -40,20 +40,17 @@ public class HttpTaskManager extends FileBackedTasksManager{
 
     public void load() throws IOException, InterruptedException {
         String jsonTasks = client.load("task");
-        taskStorage.put(id, gson.fromJson(jsonTasks,
+        taskStorage = gson.fromJson(jsonTasks,
                 new TypeToken<HashMap<Integer, Task>>() {
-                }.getType())
-        );
+                }.getType());
         String jsonEpics = client.load("epic");
-        taskStorage.put(id, gson.fromJson(jsonEpics,
+        epicStorage = gson.fromJson(jsonEpics,
                 new TypeToken<HashMap<Integer, Epic>>() {
-                }.getType())
-        );
+                }.getType());
         String jsonSubTasks = client.load("subtask");
-        taskStorage.put(id, gson.fromJson(jsonSubTasks,
+        subTaskStorage = gson.fromJson(jsonSubTasks,
                 new TypeToken<HashMap<Integer, SubTask>>() {
-                }.getType())
-        );
+                }.getType());
         String jsonHistory = client.load("history");
         ArrayList<Integer> history = gson.fromJson(jsonHistory,
                 new TypeToken<ArrayList<Integer>>() {
@@ -68,8 +65,8 @@ public class HttpTaskManager extends FileBackedTasksManager{
             }
         }
         String jsonPrioritizedTask = client.load("tasks");
-        prioritizedTask.addAll(gson.fromJson(jsonPrioritizedTask,
+        prioritizedTask = gson.fromJson(jsonPrioritizedTask,
                 new TypeToken<ArrayList<Task>>() {
-                }.getType()));
+                }.getType());
     }
 }

@@ -1,5 +1,6 @@
 package server;
 
+import model.ManagerLoadException;
 import model.ManagerSaveException;
 
 import java.io.IOException;
@@ -43,6 +44,10 @@ public class KVClient {
                 .uri(urlForPost)
                 .build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode()!=200){
+            System.out.println("Что-то пошло не так при сохранении. Сервер вернул код состояния: " + response.statusCode());
+            throw new ManagerSaveException();
+        }
     }
 
     public String load(String key) throws IOException, InterruptedException {
@@ -53,6 +58,10 @@ public class KVClient {
                 .uri(urlForGet)
                 .build();
         HttpResponse<String> response = client.send(request,HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode()!=200){
+            System.out.println("Что-то пошло не так при загрузки. Сервер вернул код состояния: " + response.statusCode());
+            throw new ManagerLoadException();
+        }
         return response.body();
     }
 }

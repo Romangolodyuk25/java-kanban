@@ -10,6 +10,8 @@ import service.Managers;
 import service.TaskManager;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 
@@ -24,6 +26,12 @@ public class Main {
         }
         TaskManager manager = Managers.getDefaultFileBackedTasksManager();
         new KVServer().start();
+        try {
+            KVClient client = new KVClient(new URI("http://localhost:8078"));
+        } catch (URISyntaxException e){
+            System.out.println("Неверный адресс URI");
+            return;
+        }
 
         Task task = new Task("Переезд", "Я буду переезжать", Status.NEW, 0, LocalDateTime.of(2023, 1, 1, 10, 00), 100);
         Epic epic1 = new Epic("Мы переезжаем", "Много задач по переезду", Status.NEW, 0, LocalDateTime.of(2023, 1, 1, 12, 0));

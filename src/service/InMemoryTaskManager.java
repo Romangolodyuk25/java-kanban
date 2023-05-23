@@ -13,9 +13,9 @@ import java.util.*;
 
 public class InMemoryTaskManager implements TaskManager {
 
-    protected final HashMap<Integer, Task> taskStorage;
-    protected final HashMap<Integer, SubTask> subTaskStorage;
-    protected final HashMap<Integer, Epic> epicStorage;
+    protected HashMap<Integer, Task> taskStorage;
+    protected HashMap<Integer, SubTask> subTaskStorage;
+    protected HashMap<Integer, Epic> epicStorage;
     protected final HistoryManager inMemoryHistoryManager;
     protected TreeSet<Task> prioritizedTask;
     protected int id = 1;

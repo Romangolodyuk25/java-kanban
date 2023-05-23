@@ -7,9 +7,10 @@ import service.TaskManager;
 
 public class InMemoryTaskManagerTest extends TaskManagerTest<InMemoryTaskManager>{
 
-    TaskManager taskManager = Managers.getDefault();
+    TaskManager taskManager = Managers.getInMemoryTaskManager();
 
     public TaskManager getTaskManager() {
-        return  taskManager;
+        return taskManager;
     }
+
 }

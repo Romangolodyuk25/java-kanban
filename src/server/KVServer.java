@@ -41,12 +41,6 @@ public class KVServer {
                     h.sendResponseHeaders(400, 0);
                     return;
                 }
-                String value = readText(h);
-                if (value.isEmpty()) {
-                    System.out.println("Value для сохранения пустой. value указывается в теле запроса");
-                    h.sendResponseHeaders(400, 0);
-                    return;
-                }
                 String body = data.get(key);
                 sendText(h,body);
             } else {
