@@ -20,13 +20,16 @@ public class KVClient {
 
     private void register(){
         try {
+            URI newUrl = URI.create(url + "/register");
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(url)
+                    .uri(newUrl)
                     .GET()
                     .build();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() != 200) {
+                System.out.println(response.statusCode());
+                System.out.println(response.body());
                 throw new ManagerSaveException();
             }
             apiToken = response.body();

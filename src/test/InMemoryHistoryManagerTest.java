@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import service.HistoryManager;
 import service.InMemoryTaskManager;
 import service.Managers;
+import service.TaskManager;
 
 import java.util.List;
 
@@ -16,13 +17,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class InMemoryHistoryManagerTest {
 
-    private InMemoryTaskManager inMemoryTaskManager;
+    private TaskManager inMemoryTaskManager;
     private HistoryManager historyManager;
 
     @BeforeEach
     public void beforeEach(){
         historyManager = Managers.getDefaultHistory();
-        inMemoryTaskManager = (InMemoryTaskManager) Managers.getDefault();
+        inMemoryTaskManager = Managers.getInMemoryTaskManager();
     }
 
     public Task createNewTask(){

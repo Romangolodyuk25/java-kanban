@@ -18,7 +18,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class HttpTaskServerTest {
@@ -26,6 +25,7 @@ public class HttpTaskServerTest {
     Gson gson;
     TaskManager manager;
     static HttpTaskServer httpTaskServer = null;
+    static KVServer kvServer = null;
 
     public Task createTask(){
         return new Task("Переезд", "Я буду переезжать", Status.NEW, 1, LocalDateTime.of(2023, 1, 1, 10, 0), 100);
@@ -49,7 +49,14 @@ public class HttpTaskServerTest {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        new KVServer().start();
+        kvServer = new KVServer();
+        kvServer.start();
+    }
+
+    @AfterAll
+    public static void afterAll(){
+        httpTaskServer.close();
+        kvServer.close();
     }
 
 
