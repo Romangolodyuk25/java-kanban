@@ -25,100 +25,10 @@ public class HttpTaskServer {
         gson = Managers.getGson();
         httpServer = HttpServer.create(new InetSocketAddress(PORT), 0);
         httpServer.createContext("/tasks/task", (this::handleTask));
-        httpServer.createContext("/tasks/subtask", (exchange -> {
-            //TODO Сделать для каждого хэндлера как в handleTask
-            if ("GET".equals(exchange.getRequestMethod())){
-                String query = exchange.getRequestURI().getQuery();
-                String response = null;
-                if(query!=null && query.contains("id")){
-                    int id = Integer.parseInt(query.split("id=")[1]);
-                    response = gson.toJson(manager.getSubTaskById(id));
-                } else {
-                    response = gson.toJson(manager.getAllSubTask());
-                }
-                sendText(exchange,response);
-            } else if("POST".equals(exchange.getRequestMethod())){
-                String body = readText(exchange);
-                if(body.isEmpty()){
-                    badRequest(exchange,"Тело не может быть пустым");
-                }else {
-                    SubTask newSubTask = gson.fromJson(body, SubTask.class);
-                    if (manager.getEpicById(newSubTask.getIdEpic()) == null) {
-                        badRequest(exchange, "Поздадача не может существовать без Эпика");
-                    } else {
-                        manager.createSubTask(newSubTask);
-                        sendText(exchange,"Подзадача создана");
-                    }
-                }
-            }else if("DELETE".equals(exchange.getRequestMethod())){
-                String query = exchange.getRequestURI().getQuery();
-                String response = null;
-                if(query!=null && query.contains("id")){
-                    int id = Integer.parseInt(query.split("id=")[1]);
-                    response = "Подзадача удалена по id";
-                    manager.deleteSubTaskById(id);
-                } else {
-                    manager.deleteAllSubTasks();
-                    response = "Все Подзадачи удалены";
-                }
-                sendText(exchange,response);
-            }else {
-                nonExistentMethod(exchange);
-            }
-        }));
-        httpServer.createContext("/tasks/epic", (exchange -> {
-            if ("GET".equals(exchange.getRequestMethod())){
-                String query = exchange.getRequestURI().getQuery();
-                String response = null;
-                if(query!=null && query.contains("id")){
-                    int id = Integer.parseInt(query.split("id=")[1]);
-                    response = gson.toJson(manager.getEpicById(id));
-                } else {
-                    response = gson.toJson(manager.getAllEpic());
-                }
-                sendText(exchange,response);
-            } else if ("POST".equals(exchange.getRequestMethod())) {
-                String body = readText(exchange);
-                if(body.isEmpty()){
-                    badRequest(exchange, "Тело не может быть пустым");
-                } else {
-                    Epic newEpic = gson.fromJson(body, Epic.class);
-                    newEpic.setSubTaskListId(new ArrayList<Integer>());
-                    manager.createEpic(newEpic);
-                    sendText(exchange,"Епик создан");
-                }
-            } else if ("DELETE".equals(exchange.getRequestMethod())) {
-                String query = exchange.getRequestURI().getQuery();
-                String response = null;
-                if(query!=null && query.contains("id")){
-                    int id = Integer.parseInt(query.split("id=")[1]);
-                    response = "Эпик удален по id";
-                    manager.deleteEpicById(id);
-                } else {
-                    manager.deleteAllEpic();
-                    response = "Все Эпики удалены";
-                }
-                sendText(exchange,response);
-            } else {
-                nonExistentMethod(exchange);
-            }
-        }));
-        httpServer.createContext("/tasks/history", (exchange -> {
-            if ("GET".equals(exchange.getRequestMethod())){
-                String response = gson.toJson(manager.getHistory());
-                sendText(exchange,response);
-            } else {
-              badRequest(exchange, "Историю можно только получить");
-            }
-        }));
-        httpServer.createContext("/tasks", (exchange -> {
-            if ("GET".equals(exchange.getRequestMethod())){
-                String response = gson.toJson(manager.getPrioritizedTasks());
-                sendText(exchange, response);
-            } else {
-                nonExistentMethod(exchange);
-            }
-        }));
+        httpServer.createContext("/tasks/subtask", (this::handleSubtask));
+        httpServer.createContext("/tasks/epic", (this::handleEpic));
+        httpServer.createContext("/tasks/history", (this::handlerHistory));
+        httpServer.createContext("/tasks", (this::handlerPrioritized));
         httpServer.start();
     }
 
@@ -137,6 +47,142 @@ public class HttpTaskServer {
                 nonExistentMethod(exchange);
                 break;
         }
+    }
+
+    public void handleSubtask(HttpExchange exchange) throws IOException{
+        switch (exchange.getRequestMethod()) {
+            case "GET":
+                getSubTask(exchange);
+                break;
+            case "POST":
+                createSubTask(exchange);
+                break;
+            case "DELETE":
+                deleteSubTask(exchange);
+                break;
+            default:
+                nonExistentMethod(exchange);
+                break;
+        }
+    }
+
+    public void handleEpic(HttpExchange exchange) throws IOException{
+        switch (exchange.getRequestMethod()) {
+            case "GET":
+                getEpic(exchange);
+                break;
+            case "POST":
+                createEpic(exchange);
+                break;
+            case "DELETE":
+                deleteEpic(exchange);
+                break;
+            default:
+                nonExistentMethod(exchange);
+                break;
+        }
+    }
+
+    public void handlerHistory(HttpExchange exchange) throws IOException{
+        switch (exchange.getRequestMethod()){
+            case "GET":
+                getHistory(exchange);
+                break;
+            default: badRequest(exchange, "Историю можно только получить");
+        }
+    }
+
+    public void handlerPrioritized(HttpExchange exchange) throws IOException{
+        if ("GET".equals(exchange.getRequestMethod())){
+            String response = gson.toJson(manager.getPrioritizedTasks());
+            sendText(exchange, response);
+        } else {
+            nonExistentMethod(exchange);
+        }
+    }
+
+    private void getHistory(HttpExchange exchange) throws IOException{
+        String response = gson.toJson(manager.getHistory());
+        sendText(exchange,response);
+    }
+
+    private void getEpic(HttpExchange exchange) throws IOException{
+        String query = exchange.getRequestURI().getQuery();
+        String response = null;
+        if(query!=null && query.contains("id")){
+            int id = Integer.parseInt(query.split("id=")[1]);
+            response = gson.toJson(manager.getEpicById(id));
+        } else {
+            response = gson.toJson(manager.getAllEpic());
+        }
+        sendText(exchange,response);
+    }
+
+    private void createEpic(HttpExchange exchange) throws  IOException{
+        String body = readText(exchange);
+        if(body.isEmpty()){
+            badRequest(exchange, "Тело не может быть пустым");
+        } else {
+            Epic newEpic = gson.fromJson(body, Epic.class);
+            newEpic.setSubTaskListId(new ArrayList<Integer>());
+            manager.createEpic(newEpic);
+            sendText(exchange,"Епик создан");
+        }
+    }
+
+    private void deleteEpic(HttpExchange exchange) throws IOException{
+        String query = exchange.getRequestURI().getQuery();
+        String response = null;
+        if(query!=null && query.contains("id")){
+            int id = Integer.parseInt(query.split("id=")[1]);
+            response = "Эпик удален по id";
+            manager.deleteEpicById(id);
+        } else {
+            manager.deleteAllEpic();
+            response = "Все Эпики удалены";
+        }
+        sendText(exchange,response);
+    }
+
+    private void getSubTask(HttpExchange exchange) throws IOException{
+        String query = exchange.getRequestURI().getQuery();
+        String response = null;
+        if(query!=null && query.contains("id")){
+            int id = Integer.parseInt(query.split("id=")[1]);
+            response = gson.toJson(manager.getSubTaskById(id));
+        } else {
+            response = gson.toJson(manager.getAllSubTask());
+        }
+        sendText(exchange,response);
+    }
+
+    private void createSubTask(HttpExchange exchange) throws IOException{
+        String body = readText(exchange);
+        if(body.isEmpty()){
+            badRequest(exchange,"Тело не может быть пустым");
+        }else {
+            SubTask newSubTask = gson.fromJson(body, SubTask.class);
+            if (manager.getEpicById(newSubTask.getIdEpic()) == null) {
+                badRequest(exchange, "Поздадача не может существовать без Эпика");
+            } else {
+                manager.createSubTask(newSubTask);
+                sendText(exchange,"Подзадача создана");
+            }
+        }
+    }
+
+    private void deleteSubTask(HttpExchange exchange) throws IOException{
+        String query = exchange.getRequestURI().getQuery();
+        String response = null;
+        if(query!=null && query.contains("id")){
+            int id = Integer.parseInt(query.split("id=")[1]);
+            response = "Подзадача удалена по id";
+            manager.deleteSubTaskById(id);
+        } else {
+            manager.deleteAllSubTasks();
+            response = "Все Подзадачи удалены";
+        }
+        sendText(exchange,response);
     }
 
     private void getTasks(HttpExchange exchange) throws IOException{
