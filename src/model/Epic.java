@@ -50,6 +50,10 @@ public class Epic extends Task {
         this.endTime = endTime;
     }
 
+    public void setSubTaskListId(ArrayList<Integer> subTaskListId) {
+        this.subTaskListId = subTaskListId;
+    }
+
     @Override
     public LocalDateTime getEndTime() {
         return endTime;

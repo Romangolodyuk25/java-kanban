@@ -3,6 +3,7 @@ package service;
 import model.*;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -17,7 +18,11 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
        this.file = file;
     }
 
-    private void save() {
+    public FileBackedTasksManager(){
+        this.file = new File("testFile.csv");
+    }
+
+    public void save() {
         if(!file.exists()){
             System.out.println("Файл не был создан");
             return;

@@ -1,18 +1,29 @@
+import controller.HttpTaskServer;
 import model.Epic;
 import model.Status;
 import model.SubTask;
 import model.Task;
+import server.KVClient;
+import server.KVServer;
 import service.FileBackedTasksManager;
 import service.Managers;
 import service.TaskManager;
 
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 
 
 public class Main {
-    public static void main(String[] args){
+    public static void main(String[] args) throws IOException {
+        HttpTaskServer httpTaskServer = null;
+        try {
+            httpTaskServer = new HttpTaskServer();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         TaskManager manager = Managers.getDefaultFileBackedTasksManager();
+        new KVServer().start();
 
         Task task = new Task("Переезд", "Я буду переезжать", Status.NEW, 0, LocalDateTime.of(2023, 1, 1, 10, 00), 100);
         Epic epic1 = new Epic("Мы переезжаем", "Много задач по переезду", Status.NEW, 0, LocalDateTime.of(2023, 1, 1, 12, 0));

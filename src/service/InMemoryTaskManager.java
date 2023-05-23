@@ -1,5 +1,7 @@
 package service;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import model.Epic;
 import model.SubTask;
 import model.Task;
@@ -17,7 +19,6 @@ public class InMemoryTaskManager implements TaskManager {
     protected final HistoryManager inMemoryHistoryManager;
     protected TreeSet<Task> prioritizedTask;
     protected int id = 1;
-
 
     public InMemoryTaskManager() {
         taskStorage = new HashMap<>();
